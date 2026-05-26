@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur Crédit Immobilier</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* CSS — Task 2 */
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== SIDEBAR A ===== -->
+    <aside class="sidebar" id="sidebar-a">
+      <!-- inputs — Task 5 -->
+      <div class="sidebar-footer">
+        <button class="btn-scenario" onclick="toggleScenarioB()">+ Ajouter scénario B</button>
+      </div>
+    </aside>
+
+    <!-- ===== SIDEBAR B (hidden by default) ===== -->
+    <aside class="sidebar" id="sidebar-b" style="display:none">
+      <!-- inputs B — Task 11 -->
+      <div class="sidebar-footer">
+        <button class="btn-scenario btn-danger" onclick="toggleScenarioB()">✕ Supprimer scénario B</button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+      <div id="kpis" class="kpis"></div>
+
+      <div class="charts-row">
+        <div class="card chart-card chart-card--wide" id="card-principal">
+          <div class="card-header">
+            <span class="card-title" id="title-principal">Capital restant dû vs Valeur du bien</span>
+          </div>
+          <canvas id="chart-principal"></canvas>
+        </div>
+        <div class="card chart-card">
+          <div class="card-header">
+            <span class="card-title">Remboursement</span>
+            <span class="toggle-group">
+              <button id="btn-mode-a" class="toggle-btn active" onclick="toggleGraphiqueMode('A')">Barres / an</button>
+              <button id="btn-mode-b" class="toggle-btn" onclick="toggleGraphiqueMode('B')">Aires cumulées</button>
+            </span>
+          </div>
+          <canvas id="chart-secondaire"></canvas>
+        </div>
+        <div class="card chart-card chart-card--small">
+          <div class="card-header"><span class="card-title">Répartition coût</span></div>
+          <canvas id="chart-donut"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tableau d'amortissement</span>
+          <span class="toggle-group">
+            <button id="btn-t-mois" class="toggle-btn active" onclick="toggleTableauMode('mois')">Par mois</button>
+            <button id="btn-t-an" class="toggle-btn" onclick="toggleTableauMode('annee')">Par année</button>
+          </span>
+        </div>
+        <div id="tableau" class="tableau-wrapper"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MOTEUR DE CALCUL ==================== -->
+  <script>
+  // Tasks 3–4
+  </script>
+
+  <!-- ==================== INTERFACE & RENDU ==================== -->
+  <script>
+  // Tasks 6–11
+  </script>
+</body>
+</html>
