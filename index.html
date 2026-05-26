@@ -793,8 +793,64 @@ function toggleGraphiqueMode(mode) {
     chartDonut.update();
   }
 }
-  function renderTableau(rows, duree) {}
-  function toggleTableauMode(mode) {}
+  function renderTableau(rows, duree) {
+  const headers = `<tr>
+    <th>${modeTableau === 'mois' ? 'Mois' : 'Année'}</th>
+    <th>Mensualité</th>
+    <th>Capital</th>
+    <th>Intérêts</th>
+    <th>Assurance</th>
+    <th>Capital restant</th>
+    <th>Valeur bien</th>
+  </tr>`;
+
+  let bodyRows;
+  if (modeTableau === 'mois') {
+    bodyRows = rows.map(r => `<tr>
+      <td>${r.mois}</td>
+      <td>${fmt(r.mensualite)}</td>
+      <td class="col-capital">${fmt(r.capital)}</td>
+      <td class="col-interets">${fmt(r.interets)}</td>
+      <td class="col-assurance">${fmt(r.assurance)}</td>
+      <td>${fmt(r.capitalRestant)}</td>
+      <td class="col-valeur">${fmt(r.valeurBien)}</td>
+    </tr>`).join('');
+  } else {
+    const years = [];
+    for (let an = 1; an <= (duree || 20); an++) {
+      const anRows = rows.filter(r => r.annee === an);
+      if (!anRows.length) continue;
+      years.push({
+        annee: an,
+        mensualite: anRows[0].mensualite,
+        capital: anRows.reduce((s, r) => s + r.capital, 0),
+        interets: anRows.reduce((s, r) => s + r.interets, 0),
+        assurance: anRows.reduce((s, r) => s + r.assurance, 0),
+        capitalRestant: anRows[anRows.length - 1].capitalRestant,
+        valeurBien: anRows[anRows.length - 1].valeurBien
+      });
+    }
+    bodyRows = years.map(y => `<tr>
+      <td>An ${y.annee}</td>
+      <td>${fmt(y.mensualite)}/mois</td>
+      <td class="col-capital">${fmt(y.capital)}</td>
+      <td class="col-interets">${fmt(y.interets)}</td>
+      <td class="col-assurance">${fmt(y.assurance)}</td>
+      <td>${fmt(y.capitalRestant)}</td>
+      <td class="col-valeur">${fmt(y.valeurBien)}</td>
+    </tr>`).join('');
+  }
+
+  document.getElementById('tableau').innerHTML =
+    `<table><thead>${headers}</thead><tbody>${bodyRows}</tbody></table>`;
+}
+
+function toggleTableauMode(mode) {
+  modeTableau = mode;
+  document.getElementById('btn-t-mois').classList.toggle('active', mode === 'mois');
+  document.getElementById('btn-t-an').classList.toggle('active', mode === 'annee');
+  onInput();
+}
   function toggleScenarioB() {}
 
   // Init
