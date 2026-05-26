@@ -284,13 +284,90 @@
   }
 
   function calcTAEG(capitalNet, rows) {
-    // TODO
-    return 0;
+    // Bisection: trouver le taux mensuel r tel que capitalNet = Σ flux_i / (1+r)^i
+    const flux = rows.map(r => r.mensualite);
+    let lo = 0, hi = 1;
+    for (let iter = 0; iter < 100; iter++) {
+      const mid = (lo + hi) / 2;
+      const pv = flux.reduce((s, f, i) => s + f / Math.pow(1 + mid, i + 1), 0);
+      if (pv > capitalNet) lo = mid; else hi = mid;
+    }
+    const rMensuel = (lo + hi) / 2;
+    return Math.round((Math.pow(1 + rMensuel, 12) - 1) * 10000) / 100;
   }
 
   function calcSimulation(p) {
-    // TODO
-    return null;
+    const rows = calcAmortissement(p);
+    if (!rows.length) return null;
+
+    const interetsTotaux = rows.reduce((s, r) => s + r.interets, 0);
+    const assuranceTotale = rows.reduce((s, r) => s + r.assurance, 0);
+    const fraisNotaire = p.valeurBien * p.fraisNotairePct / 100;
+    const coutCredit = interetsTotaux + assuranceTotale;
+    const coutTotalOperation = p.capital + interetsTotaux + assuranceTotale
+      + fraisNotaire + p.fraisDossier + p.fraisGarantie - p.apport;
+
+    // Mensualité post-différé (première ligne hors période de différé)
+    const postDiffereRow = rows[p.differeMois] || rows[0];
+    const mensualite = postDiffereRow.mensualite;
+    const mensualiteAssurance = p.capital * p.tauxAssurance / 12 / 100;
+
+    const valeurBienTerme = p.valeurBien * Math.pow(1 + p.tauxApprec / 100, p.duree);
+    const plusValueNette = valeurBienTerme - coutTotalOperation;
+
+    const capitalNetTAEG = p.capital - p.fraisDossier - p.fraisGarantie;
+    const taeg = calcTAEG(Math.max(capitalNetTAEG, 1), rows);
+
+    // Données graphique principal (mensuel)
+    const capitalRestantParMois = rows.map(r => Math.round(r.capitalRestant));
+    const valeurBienParMois = rows.map(r => Math.round(r.valeurBien));
+    const labelsParMois = rows.map((_, i) => (i % 12 === 0) ? `An ${Math.floor(i / 12) + 1}` : '');
+
+    // Point de croisement
+    let moisCroisement = null;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].valeurBien >= rows[i].capitalRestant) { moisCroisement = i + 1; break; }
+    }
+
+    // Données graphique secondaire (annuel)
+    const labelsAns = [];
+    const capitalParAn = [], interetsParAn = [];
+    const capitalCumule = [], interetsCumules = [];
+    let cumCap = 0, cumInt = 0;
+    for (let an = 1; an <= p.duree; an++) {
+      labelsAns.push(`An ${an}`);
+      const anRows = rows.filter(r => r.annee === an);
+      const capAn = anRows.reduce((s, r) => s + r.capital, 0);
+      const intAn = anRows.reduce((s, r) => s + r.interets, 0);
+      capitalParAn.push(Math.round(capAn));
+      interetsParAn.push(Math.round(intAn));
+      cumCap += capAn; cumInt += intAn;
+      capitalCumule.push(Math.round(cumCap));
+      interetsCumules.push(Math.round(cumInt));
+    }
+
+    return {
+      mensualite: Math.round(mensualite),
+      mensualiteAssurance: Math.round(mensualiteAssurance),
+      interetsTotaux: Math.round(interetsTotaux),
+      assuranceTotale: Math.round(assuranceTotale),
+      fraisNotaire: Math.round(fraisNotaire),
+      coutCredit: Math.round(coutCredit),
+      coutTotalOperation: Math.round(coutTotalOperation),
+      valeurBienTerme: Math.round(valeurBienTerme),
+      plusValueNette: Math.round(plusValueNette),
+      taeg,
+      amortissement: rows,
+      labelsParMois,
+      capitalRestantParMois,
+      valeurBienParMois,
+      moisCroisement,
+      labelsAns,
+      capitalParAn,
+      interetsParAn,
+      capitalCumule,
+      interetsCumules
+    };
   }
 
   // ---- TESTS ----
@@ -310,6 +387,21 @@
     console.assert(Math.abs(rows[0].interets - 360) < 1, `row[0].interets: got ${rows[0].interets}, want 360`);
     console.assert(rows[0].capitalRestant < 120000, `capitalRestant should decrease`);
     console.assert(rows[119].capitalRestant < 1, `last row capitalRestant should be ~0: got ${rows[119].capitalRestant}`);
+
+    // calcSimulation: test agrégats basiques
+    const res = calcSimulation({
+      capital: 200000, tauxNominal: 3.6, duree: 15,
+      tauxAssurance: 0.3, apport: 30000,
+      fraisNotairePct: 7.5, fraisDossier: 1000, fraisGarantie: 1500,
+      differeMois: 0, differeType: 'partiel',
+      ptzMontant: 0, ptzDuree: 0, ptzDiffere: 0,
+      valeurBien: 230000, tauxApprec: 2
+    });
+    console.assert(res !== null, 'calcSimulation returned null');
+    console.assert(res.mensualite > 0, `mensualite should be > 0: got ${res?.mensualite}`);
+    console.assert(res.amortissement.length === 180, `should be 180 rows: got ${res?.amortissement?.length}`);
+    console.assert(res.valeurBienTerme > 230000, `valeurBienTerme should grow: got ${res?.valeurBienTerme}`);
+    console.assert(res.taeg > 0, `TAEG should be > 0: got ${res?.taeg}`);
 
     console.log('[Tests Task 3] Terminés — vérifier les assertions ci-dessus');
   }
