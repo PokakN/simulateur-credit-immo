@@ -203,7 +203,117 @@
 
   <!-- ==================== MOTEUR DE CALCUL ==================== -->
   <script>
-  // Tasks 3–4
+  // ==================== MOTEUR DE CALCUL ====================
+
+  function calcMensualite(capital, tauxAnnuel, dureeAns) {
+    if (tauxAnnuel === 0) return capital / (dureeAns * 12);
+    const t = tauxAnnuel / 12 / 100;
+    const n = dureeAns * 12;
+    return capital * t / (1 - Math.pow(1 + t, -n));
+  }
+
+  function calcAmortissement(p) {
+    const { capital, tauxNominal, duree, tauxAssurance,
+            differeMois, differeType,
+            ptzMontant, ptzDuree, ptzDiffere,
+            valeurBien, tauxApprec } = p;
+
+    const t = tauxNominal / 12 / 100;
+    const n = duree * 12;
+    const assuranceMensuelle = capital * tauxAssurance / 12 / 100;
+
+    // Capital effectif après différé total (intérêts capitalisés)
+    const capitalApresDiffere = differeType === 'total'
+      ? capital * Math.pow(1 + t, differeMois)
+      : capital;
+
+    const dureeEffective = n - differeMois;
+    const mensualite = tauxNominal === 0
+      ? capitalApresDiffere / dureeEffective
+      : capitalApresDiffere * t / (1 - Math.pow(1 + t, -dureeEffective));
+
+    // PTZ: mensualité fixe sans intérêts, après différé PTZ
+    const ptzN = ptzDuree * 12 - ptzDiffere;
+    const ptzMensualite = ptzMontant > 0 && ptzN > 0 ? ptzMontant / ptzN : 0;
+
+    const rows = [];
+    let capitalRestant = capital;
+    let ptzRestant = ptzMontant;
+
+    for (let mois = 1; mois <= n; mois++) {
+      const enDiffere = mois <= differeMois;
+      const enDifferePTZ = mois <= ptzDiffere;
+
+      const interets = capitalRestant * t;
+      let capitalRembourse = 0;
+
+      if (enDiffere) {
+        if (differeType === 'total') {
+          // Intérêts capitalisés — pas de paiement
+          capitalRestant = capitalRestant * (1 + t);
+        }
+        // différé partiel : intérêts seuls payés, capital ne bouge pas
+      } else {
+        capitalRembourse = mensualite - interets;
+        capitalRestant = Math.max(0, capitalRestant - capitalRembourse);
+      }
+
+      const ptzPaiement = !enDifferePTZ && ptzRestant > 0
+        ? Math.min(ptzMensualite, ptzRestant) : 0;
+      ptzRestant = Math.max(0, ptzRestant - ptzPaiement);
+
+      const valeurBienMois = valeurBien * Math.pow(1 + tauxApprec / 100, mois / 12);
+
+      const mensualiteLigne = enDiffere
+        ? (differeType === 'partiel' ? interets + assuranceMensuelle : assuranceMensuelle)
+        : mensualite + assuranceMensuelle + ptzPaiement;
+
+      rows.push({
+        mois,
+        annee: Math.ceil(mois / 12),
+        mensualite: mensualiteLigne,
+        capital: enDiffere ? 0 : capitalRembourse,
+        interets,
+        assurance: assuranceMensuelle,
+        ptz: ptzPaiement,
+        capitalRestant,
+        valeurBien: valeurBienMois
+      });
+    }
+    return rows;
+  }
+
+  function calcTAEG(capitalNet, rows) {
+    // TODO
+    return 0;
+  }
+
+  function calcSimulation(p) {
+    // TODO
+    return null;
+  }
+
+  // ---- TESTS ----
+  function _runTests() {
+    // calcMensualite: 250 000€ @ 3.7% sur 20 ans ≈ 1 476€
+    const m = calcMensualite(250000, 3.7, 20);
+    console.assert(m !== null && Math.abs(m - 1476) < 5, `calcMensualite failed: got ${m}`);
+
+    // calcAmortissement: premier mois, intérêts = 120000 * 3.6/12/100 = 360
+    const rows = calcAmortissement({
+      capital: 120000, tauxNominal: 3.6, duree: 10,
+      tauxAssurance: 0, differeMois: 0, differeType: 'partiel',
+      ptzMontant: 0, ptzDuree: 0, ptzDiffere: 0,
+      valeurBien: 150000, tauxApprec: 2
+    });
+    console.assert(rows.length === 120, `rows.length: got ${rows.length}, want 120`);
+    console.assert(Math.abs(rows[0].interets - 360) < 1, `row[0].interets: got ${rows[0].interets}, want 360`);
+    console.assert(rows[0].capitalRestant < 120000, `capitalRestant should decrease`);
+    console.assert(rows[119].capitalRestant < 1, `last row capitalRestant should be ~0: got ${rows[119].capitalRestant}`);
+
+    console.log('[Tests Task 3] Terminés — vérifier les assertions ci-dessus');
+  }
+  _runTests();
   </script>
 
   <!-- ==================== INTERFACE & RENDU ==================== -->
