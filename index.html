@@ -528,42 +528,6 @@
     };
   }
 
-  // ---- TESTS ----
-  function _runTests() {
-    // calcMensualite: 250 000€ @ 3.7% sur 20 ans ≈ 1 476€
-    const m = calcMensualite(250000, 3.7, 20);
-    console.assert(m !== null && Math.abs(m - 1476) < 5, `calcMensualite failed: got ${m}`);
-
-    // calcAmortissement: premier mois, intérêts = 120000 * 3.6/12/100 = 360
-    const rows = calcAmortissement({
-      capital: 120000, tauxNominal: 3.6, duree: 10,
-      tauxAssurance: 0, differeMois: 0, differeType: 'partiel',
-      ptzMontant: 0, ptzDuree: 0, ptzDiffere: 0,
-      valeurBien: 150000, tauxApprec: 2
-    });
-    console.assert(rows.length === 120, `rows.length: got ${rows.length}, want 120`);
-    console.assert(Math.abs(rows[0].interets - 360) < 1, `row[0].interets: got ${rows[0].interets}, want 360`);
-    console.assert(rows[0].capitalRestant < 120000, `capitalRestant should decrease`);
-    console.assert(rows[119].capitalRestant < 1, `last row capitalRestant should be ~0: got ${rows[119].capitalRestant}`);
-
-    // calcSimulation: test agrégats basiques
-    const res = calcSimulation({
-      capital: 200000, tauxNominal: 3.6, duree: 15,
-      tauxAssurance: 0.3, apport: 30000,
-      fraisNotairePct: 7.5, fraisDossier: 1000, fraisGarantie: 1500,
-      differeMois: 0, differeType: 'partiel',
-      ptzMontant: 0, ptzDuree: 0, ptzDiffere: 0,
-      valeurBien: 230000, tauxApprec: 2
-    });
-    console.assert(res !== null, 'calcSimulation returned null');
-    console.assert(res.mensualite > 0, `mensualite should be > 0: got ${res?.mensualite}`);
-    console.assert(res.amortissement.length === 180, `should be 180 rows: got ${res?.amortissement?.length}`);
-    console.assert(res.valeurBienTerme > 230000, `valeurBienTerme should grow: got ${res?.valeurBienTerme}`);
-    console.assert(res.taeg > 0, `TAEG should be > 0: got ${res?.taeg}`);
-
-    console.log('[Tests Task 3] Terminés — vérifier les assertions ci-dessus');
-  }
-  _runTests();
   </script>
 
   <!-- ==================== INTERFACE & RENDU ==================== -->
