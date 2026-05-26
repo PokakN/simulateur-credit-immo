@@ -594,7 +594,83 @@
   }
 
   // Stubs — replaced in Tasks 7–11
-  function renderGraphiquePrincipal(res, resB) {}
+  function renderGraphiquePrincipal(res, resB) {
+    const ctx = document.getElementById('chart-principal').getContext('2d');
+
+    const datasets = [
+      {
+        label: 'Capital restant dû' + (resB ? ' — A' : ''),
+        data: res.capitalRestantParMois,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.07)',
+        fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
+      },
+      {
+        label: 'Valeur du bien' + (resB ? ' — A' : ''),
+        data: res.valeurBienParMois,
+        borderColor: '#10b981',
+        borderDash: [6, 3],
+        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+      }
+    ];
+
+    if (resB) {
+      datasets.push({
+        label: 'Capital restant dû — B',
+        data: resB.capitalRestantParMois,
+        borderColor: '#f59e0b',
+        borderDash: [4, 2],
+        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+      });
+      datasets.push({
+        label: 'Valeur du bien — B',
+        data: resB.valeurBienParMois,
+        borderColor: '#6366f1',
+        borderDash: [6, 3],
+        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+      });
+    }
+
+    const data = { labels: res.labelsParMois, datasets };
+
+    const options = {
+      responsive: true, maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: c => ` ${c.dataset.label} : ${new Intl.NumberFormat('fr-FR').format(c.parsed.y)} €`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxTicksLimit: 10, font: { size: 10 } }, grid: { display: false } },
+        y: {
+          ticks: {
+            font: { size: 10 },
+            callback: v => new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(v) + ' €'
+          }
+        }
+      }
+    };
+
+    if (!chartPrincipal) {
+      chartPrincipal = new Chart(ctx, { type: 'line', data, options });
+    } else {
+      chartPrincipal.data = data;
+      chartPrincipal.update();
+    }
+
+    // Annotation croisement dans le titre
+    const titleEl = document.getElementById('title-principal');
+    if (titleEl) {
+      const cross = res.moisCroisement
+        ? ` — Croisement : An ${Math.ceil(res.moisCroisement / 12)}, mois ${res.moisCroisement}`
+        : '';
+      titleEl.textContent = 'Capital restant dû vs Valeur du bien' + cross;
+    }
+  }
   function renderGraphiqueSecondaire(res) {}
   function renderDonut(res) {}
   function renderTableau(rows, duree) {}
