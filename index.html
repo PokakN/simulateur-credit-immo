@@ -491,7 +491,119 @@
 
   <!-- ==================== INTERFACE & RENDU ==================== -->
   <script>
-  // Tasks 6–11
+  // ==================== INTERFACE & RENDU ====================
+
+  let chartPrincipal = null;
+  let chartSecondaire = null;
+  let chartDonut = null;
+  let modeGraphique = 'A';
+  let modeTableau = 'mois';
+  let scenarioBActif = false;
+
+  function lireParams(prefix) {
+    const v = id => parseFloat(document.getElementById(`${prefix}-${id}`)?.value) || 0;
+    const s = id => document.getElementById(`${prefix}-${id}`)?.value || 'partiel';
+    return {
+      capital:        v('capital'),
+      tauxNominal:    v('taux'),
+      duree:          v('duree') || 1,
+      tauxAssurance:  v('assurance'),
+      apport:         v('apport'),
+      fraisNotairePct: v('notaire'),
+      fraisDossier:   v('dossier'),
+      fraisGarantie:  v('garantie'),
+      differeMois:    v('differe-mois'),
+      differeType:    s('differe-type'),
+      ptzMontant:     v('ptz-montant'),
+      ptzDuree:       v('ptz-duree'),
+      ptzDiffere:     v('ptz-differe'),
+      valeurBien:     v('valeur-bien') || 1,
+      tauxApprec:     v('apprec')
+    };
+  }
+
+  function fmt(n) {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €';
+  }
+  function fmtPct(n) { return (+n).toFixed(2) + ' %'; }
+
+  function _kpiHTML(res, prefix) {
+    const pvClass = res.plusValueNette >= 0 ? 'kpi-value--green' : 'kpi-value--red';
+    const duree = parseFloat(document.getElementById(`${prefix}-duree`)?.value) || 20;
+    const tauxApprec = parseFloat(document.getElementById(`${prefix}-apprec`)?.value) || 0;
+    return `
+      <div class="kpi-card">
+        <div class="kpi-label">Mensualité</div>
+        <div class="kpi-value">${fmt(res.mensualite)}</div>
+        <div class="kpi-sub">dont assurance : ${fmt(res.mensualiteAssurance)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Coût crédit</div>
+        <div class="kpi-value kpi-value--red">${fmt(res.coutCredit)}</div>
+        <div class="kpi-sub">intérêts + assurance</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Valeur estimée</div>
+        <div class="kpi-value kpi-value--green">${fmt(res.valeurBienTerme)}</div>
+        <div class="kpi-sub">dans ${duree} ans à ${fmtPct(tauxApprec)}/an</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Plus-value nette</div>
+        <div class="kpi-value ${pvClass}">${res.plusValueNette >= 0 ? '+' : ''}${fmt(res.plusValueNette)}</div>
+        <div class="kpi-sub">valeur − coût total op.</div>
+      </div>`;
+  }
+
+  function renderKPIs(res) {
+    document.getElementById('kpis').innerHTML = `<div class="kpis">${_kpiHTML(res, 'a')}</div>`;
+  }
+
+  function onInput() {
+    const pA = lireParams('a');
+    if (pA.capital <= 0 || pA.duree < 1) return;
+    const resA = calcSimulation(pA);
+    if (!resA) return;
+
+    if (scenarioBActif) {
+      const pB = lireParams('b');
+      if (pB.capital <= 0 || pB.duree < 1) return;
+      const resB = calcSimulation(pB);
+      if (!resB) return;
+      document.getElementById('kpis').innerHTML = `
+        <div class="comparison-grid">
+          <div>
+            <div class="scenario-label scenario-a-label">Scénario A</div>
+            <div class="kpis">${_kpiHTML(resA, 'a')}</div>
+          </div>
+          <div>
+            <div class="scenario-label scenario-b-label">Scénario B</div>
+            <div class="kpis">${_kpiHTML(resB, 'b')}</div>
+          </div>
+        </div>`;
+      renderGraphiquePrincipal(resA, resB);
+      renderGraphiqueSecondaire(resA);
+      renderDonut(resA);
+      renderTableau(resA.amortissement, pA.duree);
+    } else {
+      renderKPIs(resA);
+      renderGraphiquePrincipal(resA, null);
+      renderGraphiqueSecondaire(resA);
+      renderDonut(resA);
+      renderTableau(resA.amortissement, pA.duree);
+    }
+  }
+
+  // Stubs — replaced in Tasks 7–11
+  function renderGraphiquePrincipal(res, resB) {}
+  function renderGraphiqueSecondaire(res) {}
+  function renderDonut(res) {}
+  function renderTableau(rows, duree) {}
+  function toggleGraphiqueMode(mode) {}
+  function toggleTableauMode(mode) {}
+  function toggleScenarioB() {}
+
+  // Init
+  onInput();
   </script>
 </body>
 </html>
