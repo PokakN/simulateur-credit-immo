@@ -6,7 +6,140 @@
   <title>Simulateur Crédit Immobilier</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* CSS — Task 2 */
+    :root {
+      --sidebar-bg: #1e293b;
+      --sidebar-text: #e2e8f0;
+      --sidebar-muted: #94a3b8;
+      --sidebar-input-bg: #334155;
+      --content-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --font: system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--content-bg); color: var(--text); }
+    .app { display: flex; min-height: 100vh; }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      width: 240px; min-width: 240px;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      padding: 16px 12px;
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-group { margin-bottom: 18px; }
+    .sidebar-group-title {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; color: var(--sidebar-muted);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .sidebar-field { margin-bottom: 8px; }
+    .sidebar-field label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 3px; }
+    .sidebar-field input,
+    .sidebar-field select {
+      width: 100%;
+      background: var(--sidebar-input-bg);
+      border: 1px solid #475569; border-radius: 5px;
+      color: var(--sidebar-text); font-size: 12px;
+      padding: 5px 8px; outline: none;
+      transition: border-color .15s;
+    }
+    .sidebar-field input:focus,
+    .sidebar-field select:focus { border-color: var(--blue); }
+    .sidebar-field select option { background: var(--sidebar-bg); }
+    .sidebar-footer { margin-top: auto; padding-top: 16px; }
+    .btn-scenario {
+      width: 100%; background: var(--blue); color: white;
+      border: none; border-radius: 6px; padding: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-scenario:hover { background: #1d4ed8; }
+    .btn-danger { background: #dc2626; }
+    .btn-danger:hover { background: #b91c1c; }
+
+    /* ---- MAIN CONTENT ---- */
+    .content {
+      flex: 1; padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+      overflow-x: hidden;
+    }
+
+    /* ---- KPIs ---- */
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .kpi-card {
+      background: var(--card-bg); border-radius: 10px;
+      padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .kpi-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
+    .kpi-value { font-size: 20px; font-weight: 700; color: var(--text); margin: 4px 0 2px; }
+    .kpi-value--green { color: var(--green); }
+    .kpi-value--red { color: var(--red); }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); }
+
+    /* ---- CARDS & CHARTS ---- */
+    .card {
+      background: var(--card-bg); border-radius: 10px;
+      padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .card-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 12px;
+    }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .charts-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 12px; }
+    .chart-card canvas { max-height: 220px; }
+
+    /* ---- TOGGLE BUTTONS ---- */
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-btn {
+      font-size: 11px; padding: 3px 10px;
+      border: 1px solid var(--border); border-radius: 5px;
+      background: transparent; color: var(--text-muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .toggle-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+    /* ---- TABLEAU ---- */
+    .tableau-wrapper { overflow-x: auto; max-height: 320px; overflow-y: auto; }
+    .tableau-wrapper table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tableau-wrapper th {
+      position: sticky; top: 0;
+      background: #f1f5f9; padding: 6px 8px;
+      text-align: right; color: var(--text-muted);
+      font-weight: 600; font-size: 10px;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .tableau-wrapper th:first-child { text-align: left; }
+    .tableau-wrapper td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f1f5f9; }
+    .tableau-wrapper td:first-child { text-align: left; }
+    .tableau-wrapper tr:nth-child(even) td { background: #fafafa; }
+    .col-capital { color: var(--blue); }
+    .col-interets { color: var(--red); }
+    .col-assurance { color: var(--amber); }
+    .col-valeur { color: var(--green); }
+
+    /* ---- COMPARAISON ---- */
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; grid-column: 1 / -1; }
+    .scenario-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .scenario-a-label { color: var(--blue); }
+    .scenario-b-label { color: var(--amber); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 900px) {
+      .app { flex-direction: column; }
+      .sidebar { width: 100%; min-width: 0; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
