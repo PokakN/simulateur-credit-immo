@@ -671,10 +671,91 @@
       titleEl.textContent = 'Capital restant dû vs Valeur du bien' + cross;
     }
   }
-  function renderGraphiqueSecondaire(res) {}
+  function renderGraphiqueSecondaire(res) {
+  const ctx = document.getElementById('chart-secondaire').getContext('2d');
+  const newType = modeGraphique === 'A' ? 'bar' : 'line';
+
+  let data;
+  if (modeGraphique === 'A') {
+    data = {
+      labels: res.labelsAns,
+      datasets: [
+        {
+          label: 'Capital remboursé',
+          data: res.capitalParAn,
+          backgroundColor: 'rgba(37,99,235,0.8)',
+          stack: 'stack'
+        },
+        {
+          label: 'Intérêts payés',
+          data: res.interetsParAn,
+          backgroundColor: 'rgba(220,38,38,0.7)',
+          stack: 'stack'
+        }
+      ]
+    };
+  } else {
+    data = {
+      labels: res.labelsAns,
+      datasets: [
+        {
+          label: 'Capital cumulé',
+          data: res.capitalCumule,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.12)',
+          fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
+        },
+        {
+          label: 'Intérêts cumulés',
+          data: res.interetsCumules,
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.08)',
+          fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
+        }
+      ]
+    };
+  }
+
+  const options = {
+    responsive: true, maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          label: c => ` ${c.dataset.label} : ${new Intl.NumberFormat('fr-FR').format(c.parsed.y)} €`
+        }
+      }
+    },
+    scales: {
+      x: { stacked: modeGraphique === 'A', ticks: { font: { size: 10 } }, grid: { display: false } },
+      y: {
+        stacked: modeGraphique === 'A',
+        ticks: {
+          font: { size: 10 },
+          callback: v => new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(v) + ' €'
+        }
+      }
+    }
+  };
+
+  if (!chartSecondaire || chartSecondaire.config.type !== newType) {
+    if (chartSecondaire) chartSecondaire.destroy();
+    chartSecondaire = new Chart(ctx, { type: newType, data, options });
+  } else {
+    chartSecondaire.data = data;
+    chartSecondaire.update();
+  }
+}
+
+function toggleGraphiqueMode(mode) {
+  modeGraphique = mode;
+  document.getElementById('btn-mode-a').classList.toggle('active', mode === 'A');
+  document.getElementById('btn-mode-b').classList.toggle('active', mode === 'B');
+  if (chartSecondaire) { chartSecondaire.destroy(); chartSecondaire = null; }
+  onInput();
+}
   function renderDonut(res) {}
   function renderTableau(rows, duree) {}
-  function toggleGraphiqueMode(mode) {}
   function toggleTableauMode(mode) {}
   function toggleScenarioB() {}
 
