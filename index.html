@@ -738,24 +738,53 @@
 
   function lireParams(prefix) {
     const v = id => parseFloat(document.getElementById(`${prefix}-${id}`)?.value) || 0;
-    const s = id => document.getElementById(`${prefix}-${id}`)?.value || 'partiel';
+    const s = id => document.getElementById(`${prefix}-${id}`)?.value || 'ancien';
+
+    const prixProjet    = v('prix-projet');
+    const apport        = v('apport');
+    const tauxNotaire   = v('notaire');
+    const fraisDossier  = Math.max(500, Math.min(1500, v('dossier')));
+    const tauxGarantie  = Math.max(1,   Math.min(2,    v('garantie-pct')));
+    const travaux       = v('travaux-total');
+
+    const fraisNotaire     = prixProjet * tauxNotaire / 100;
+    const base             = prixProjet + fraisNotaire + fraisDossier + travaux - apport;
+    const fraisGarantie    = Math.max(0, base) * tauxGarantie / 100;
+    const capital          = Math.max(0, base + fraisGarantie);
+
     return {
-      capital:        v('capital'),
+      capital,
+      prixProjet,
       tauxNominal:    v('taux'),
       duree:          v('duree') || 1,
       tauxAssurance:  v('assurance'),
-      apport:         v('apport'),
-      fraisNotairePct: v('notaire'),
-      fraisDossier:   v('dossier'),
-      fraisGarantie:  v('garantie'),
+      apport,
+      fraisNotairePct: tauxNotaire,
+      fraisNotaire,
+      fraisDossier,
+      fraisGarantie,
+      tauxGarantie,
       differeMois:    v('differe-mois'),
       differeType:    s('differe-type'),
       ptzMontant:     v('ptz-montant'),
-      ptzDuree:       v('ptz-duree'),
-      ptzDiffere:     v('ptz-differe'),
-      valeurBien:     v('valeur-bien') || 1,
-      tauxApprec:     v('apprec')
+      ptzDuree:       10,
+      ptzDiffere:     0,
+      valeurBien:     prixProjet || 1,
+      tauxApprec:     v('apprec'),
+      travaux,
+      typeProjet:     s('type-projet')
     };
+  }
+
+  function updateCapitalDisplay(prefix, params) {
+    const el = document.getElementById(`${prefix}-capital-display`);
+    if (!el) return;
+    const frais = params.fraisNotaire + params.fraisDossier + params.fraisGarantie;
+    el.innerHTML = `<div class="capital-display">
+      <span class="capital-label">Montant emprunté</span>
+      <span class="capital-value">${fmt(params.capital)}</span>
+      <span class="capital-sub">dont frais : ${fmt(frais)}</span>
+    </div>`;
   }
 
   function fmt(n) {
@@ -805,6 +834,8 @@
       if (pB.capital <= 0 || pB.duree < 1) return;
       const resB = calcSimulation(pB);
       if (!resB) return;
+      updateCapitalDisplay('a', pA);
+      updateCapitalDisplay('b', pB);
       document.getElementById('kpis').innerHTML = `
         <div class="comparison-grid">
           <div>
@@ -821,6 +852,7 @@
       renderDonut(resA);
       renderTableau(resA.amortissement, pA.duree);
     } else {
+      updateCapitalDisplay('a', pA);
       renderKPIs(resA);
       renderGraphiquePrincipal(resA, null);
       renderGraphiqueSecondaire(resA);
