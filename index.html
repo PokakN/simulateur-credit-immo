@@ -736,6 +736,58 @@
   let modeTableau = 'mois';
   let scenarioBActif = false;
 
+  const PRESETS = {
+    neuf:   { notaire: 2.5, notaireMin: 2,   notaireMax: 3,   notaireBadge: '[2–3 %]',   ptz: 30000, travaux: true  },
+    vefa:   { notaire: 2.5, notaireMin: 2,   notaireMax: 3,   notaireBadge: '[2–3 %]',   ptz: 30000, travaux: false },
+    ancien: { notaire: 7.5, notaireMin: 7,   notaireMax: 8.5, notaireBadge: '[7–8,5 %]', ptz: 0,     travaux: true  }
+  };
+
+  function onTypeChange(prefix) {
+    const type = document.getElementById(`${prefix}-type-projet`)?.value || 'ancien';
+    const p = PRESETS[type] || PRESETS.ancien;
+
+    // Frais de notaire : min/max/valeur + badge
+    const notaireEl = document.getElementById(`${prefix}-notaire`);
+    if (notaireEl) {
+      notaireEl.min   = p.notaireMin;
+      notaireEl.max   = p.notaireMax;
+      notaireEl.value = p.notaire;
+    }
+    const badgeEl = document.getElementById(`${prefix}-notaire-badge`);
+    if (badgeEl) badgeEl.textContent = p.notaireBadge;
+
+    // PTZ montant par défaut (seulement si actuellement à 0)
+    const ptzEl = document.getElementById(`${prefix}-ptz-montant`);
+    if (ptzEl && parseFloat(ptzEl.value) === 0) ptzEl.value = p.ptz;
+
+    // Travaux : visible pour neuf et ancien, caché pour vefa
+    const travauxEl = document.getElementById(`${prefix}-travaux-section`);
+    if (travauxEl) travauxEl.style.display = p.travaux ? 'block' : 'none';
+
+    // PTZ group : caché pour ancien
+    const ptzGroup = document.getElementById(`${prefix}-ptz-group`);
+    if (ptzGroup) ptzGroup.style.display = type === 'ancien' ? 'none' : 'block';
+
+    onInput();
+  }
+
+  function onTravauxInput(prefix, champ) {
+    const m2     = parseFloat(document.getElementById(`${prefix}-travaux-m2`)?.value)      || 0;
+    const prixM2 = parseFloat(document.getElementById(`${prefix}-travaux-prix-m2`)?.value) || 0;
+
+    if (champ === 'm2' || champ === 'prix-m2') {
+      const el = document.getElementById(`${prefix}-travaux-total`);
+      if (el) el.value = Math.round(m2 * prixM2);
+    } else if (champ === 'total') {
+      const total = parseFloat(document.getElementById(`${prefix}-travaux-total`)?.value) || 0;
+      if (m2 > 0) {
+        const el = document.getElementById(`${prefix}-travaux-prix-m2`);
+        if (el) el.value = Math.round(total / m2);
+      }
+    }
+    onInput();
+  }
+
   function lireParams(prefix) {
     const v = id => parseFloat(document.getElementById(`${prefix}-${id}`)?.value) || 0;
     const s = id => document.getElementById(`${prefix}-${id}`)?.value || 'ancien';
@@ -1147,7 +1199,7 @@ function toggleTableauMode(mode) {
 }
 
   // Init
-  onInput();
+  onTypeChange('a');
   </script>
 </body>
 </html>
