@@ -1369,7 +1369,65 @@ function showToast(message) {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+// ==================== URL PARTAGEABLE ====================
+
+function genererStateURL(params) {
+  const state = btoa(unescape(encodeURIComponent(JSON.stringify(params))));
+  const url = new URL(window.location.href);
+  url.searchParams.set('state', state);
+  return url.toString();
+}
+
+function partagerProjet(id) {
+  const projets = chargerProjets();
+  const projet = projets.find(p => p.id === id);
+  if (!projet) return;
+  const url = genererStateURL(projet.params);
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('URL copiée dans le presse-papier !');
+  }).catch(() => {
+    prompt('Copiez cette URL :', url);
+  });
+}
+
+function restaurerDepuisURL() {
+  const params = new URLSearchParams(window.location.search);
+  const state = params.get('state');
+  if (!state) return;
+  try {
+    const p = JSON.parse(decodeURIComponent(escape(atob(state))));
+    if (!p || typeof p !== 'object') return;
+
+    const set = (suffix, val) => {
+      const el = document.getElementById(`a-${suffix}`);
+      if (el !== null && val !== undefined) el.value = val;
+    };
+
+    set('type-projet',    p.typeProjet  || 'ancien');
+    set('prix-projet',    p.prixProjet);
+    set('apport',         p.apport);
+    set('taux',           p.tauxNominal);
+    set('duree',          p.duree);
+    set('assurance',      p.tauxAssurance);
+    set('notaire',        p.fraisNotairePct);
+    set('dossier',        p.fraisDossier);
+    set('garantie-pct',   p.tauxGarantie ?? 1.5);
+    set('differe-mois',   p.differeMois);
+    set('ptz-montant',    p.ptzMontant);
+    set('travaux-total',  p.travaux);
+    set('apprec',         p.tauxApprec);
+
+    const dtEl = document.getElementById('a-differe-type');
+    if (dtEl) dtEl.value = p.differeType || 'partiel';
+
+    showToast('Projet chargé depuis le lien partagé');
+  } catch {
+    console.warn('State URL invalide');
+  }
+}
+
   // Init
+  restaurerDepuisURL();
   onTypeChange('a');
   </script>
 </body>
