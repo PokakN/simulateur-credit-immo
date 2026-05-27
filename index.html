@@ -518,6 +518,40 @@
     </main>
   </div>
 
+  <!-- ===== PANNEAU PROJETS ===== -->
+  <div class="projets-overlay" id="projets-overlay" onclick="closeProjetsPanel(event)">
+    <div class="projets-panel" onclick="event.stopPropagation()">
+      <div class="projets-panel-header">
+        <h2>💾 Mes projets</h2>
+        <button class="projets-panel-close" onclick="closeProjetsPanel()">✕</button>
+      </div>
+      <div class="projets-panel-save">
+        <div class="sidebar-field">
+          <label style="color:#94a3b8;font-size:11px">Nom du projet</label>
+          <input type="text" id="projet-nom" placeholder="ex: Appart Lyon 2ème" style="background:#334155;border:1px solid #475569;border-radius:5px;color:#e2e8f0;font-size:12px;padding:5px 8px;width:100%;outline:none;">
+        </div>
+        <div class="sidebar-field" style="margin-top:6px">
+          <label style="color:#94a3b8;font-size:11px">URL de l'annonce</label>
+          <input type="url" id="projet-url" placeholder="https://..." style="background:#334155;border:1px solid #475569;border-radius:5px;color:#e2e8f0;font-size:12px;padding:5px 8px;width:100%;outline:none;">
+        </div>
+        <button onclick="sauvegarderProjet()" style="margin-top:8px;width:100%;background:#2563eb;color:white;border:none;border-radius:5px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;">Sauvegarder le projet actuel</button>
+      </div>
+      <div class="projets-panel-list" id="projets-list">
+        <!-- Rendu dynamique par renderProjetsList() -->
+      </div>
+      <div class="projets-panel-footer">
+        <button onclick="exporterProjets()">⬇ Exporter JSON</button>
+        <label style="flex:1;text-align:center;cursor:pointer;">
+          ⬆ Importer JSON
+          <input type="file" accept=".json" onchange="importerProjets(event)" style="display:none">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
   <!-- ==================== MOTEUR DE CALCUL ==================== -->
   <script>
   // ==================== MOTEUR DE CALCUL ====================
