@@ -79,8 +79,8 @@
       background: var(--card-bg); border-radius: 10px;
       padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
-    .kpi-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
-    .kpi-value { font-size: 20px; font-weight: 700; color: var(--text); margin: 4px 0 2px; }
+    .kpi-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-value { font-size: clamp(15px, 2vw, 20px); font-weight: 700; color: var(--text); margin: 4px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .kpi-value--green { color: var(--green); }
     .kpi-value--red { color: var(--red); }
     .kpi-sub { font-size: 11px; color: var(--text-muted); }
@@ -96,7 +96,8 @@
     }
     .card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); }
     .charts-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 12px; }
-    .chart-card canvas { max-height: 220px; }
+    .charts-row > * { min-width: 0; }
+    .chart-card canvas { width: 100% !important; max-height: 220px; }
 
     /* ---- TOGGLE BUTTONS ---- */
     .toggle-group { display: flex; gap: 4px; }
@@ -760,13 +761,23 @@
     const ptzEl = document.getElementById(`${prefix}-ptz-montant`);
     if (ptzEl && parseFloat(ptzEl.value) === 0) ptzEl.value = p.ptz;
 
-    // Travaux : visible pour neuf et ancien, caché pour vefa
+    // Travaux : visible pour neuf et ancien, caché et remis à 0 pour vefa
     const travauxEl = document.getElementById(`${prefix}-travaux-section`);
     if (travauxEl) travauxEl.style.display = p.travaux ? 'block' : 'none';
+    if (!p.travaux) {
+      ['travaux-m2','travaux-prix-m2','travaux-total'].forEach(id => {
+        const el = document.getElementById(`${prefix}-${id}`);
+        if (el) el.value = 0;
+      });
+    }
 
-    // PTZ group : caché pour ancien
+    // PTZ group : caché et remis à 0 pour ancien
     const ptzGroup = document.getElementById(`${prefix}-ptz-group`);
     if (ptzGroup) ptzGroup.style.display = type === 'ancien' ? 'none' : 'block';
+    if (type === 'ancien') {
+      const ptzReset = document.getElementById(`${prefix}-ptz-montant`);
+      if (ptzReset) ptzReset.value = 0;
+    }
 
     onInput();
   }
@@ -842,7 +853,7 @@
   function fmt(n) {
     return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €';
   }
-  function fmtPct(n) { return (+n).toFixed(2) + ' %'; }
+  function fmtPct(n) { return parseFloat((+n).toFixed(2)) + ' %'; }
 
   function _kpiHTML(res, prefix) {
     const pvClass = res.plusValueNette >= 0 ? 'kpi-value--green' : 'kpi-value--red';
@@ -985,9 +996,12 @@
     // Annotation croisement dans le titre
     const titleEl = document.getElementById('title-principal');
     if (titleEl) {
-      const cross = res.moisCroisement
-        ? ` — Croisement : An ${Math.ceil(res.moisCroisement / 12)}, mois ${res.moisCroisement}`
-        : '';
+      let cross = '';
+      if (res.moisCroisement === 1) {
+        cross = ' — ✓ Bien déjà supérieur à la dette';
+      } else if (res.moisCroisement) {
+        cross = ` — Croisement : An ${Math.ceil(res.moisCroisement / 12)}, mois ${res.moisCroisement}`;
+      }
       titleEl.textContent = 'Capital restant dû vs Valeur du bien' + cross;
     }
   }
