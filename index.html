@@ -360,84 +360,119 @@
 
     <!-- ===== SIDEBAR B (hidden by default) ===== -->
     <aside class="sidebar" id="sidebar-b" style="display:none">
+
+      <!-- PROJET B -->
       <div class="sidebar-group">
-  <div class="sidebar-group-title">Prêt principal — B</div>
-  <div class="sidebar-field">
-    <label>Montant emprunté (€)</label>
-    <input type="number" id="b-capital" value="250000" min="1000" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Taux nominal annuel (%)</label>
-    <input type="number" id="b-taux" value="3.70" min="0" max="30" step="0.01" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Durée (années)</label>
-    <input type="number" id="b-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Taux assurance annuel (%)</label>
-    <input type="number" id="b-assurance" value="0.36" min="0" max="5" step="0.01" oninput="onInput()">
-  </div>
-</div>
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Apport &amp; frais — B</div>
-  <div class="sidebar-field">
-    <label>Apport personnel (€)</label>
-    <input type="number" id="b-apport" value="40000" min="0" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de notaire (%)</label>
-    <input type="number" id="b-notaire" value="7.5" min="0" max="15" step="0.1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de dossier (€)</label>
-    <input type="number" id="b-dossier" value="1000" min="0" step="100" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de garantie (€)</label>
-    <input type="number" id="b-garantie" value="2000" min="0" step="100" oninput="onInput()">
-  </div>
-</div>
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Différé — B</div>
-  <div class="sidebar-field">
-    <label>Durée du différé (mois)</label>
-    <input type="number" id="b-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Type de différé</label>
-    <select id="b-differe-type" onchange="onInput()">
-      <option value="partiel">Partiel</option>
-      <option value="total">Total</option>
-    </select>
-  </div>
-</div>
-<div class="sidebar-group">
-  <div class="sidebar-group-title">PTZ — B</div>
-  <div class="sidebar-field">
-    <label>Montant PTZ (€)</label>
-    <input type="number" id="b-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Durée PTZ (années)</label>
-    <input type="number" id="b-ptz-duree" value="0" min="0" max="25" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Différé PTZ (mois)</label>
-    <input type="number" id="b-ptz-differe" value="0" min="0" max="120" step="1" oninput="onInput()">
-  </div>
-</div>
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Valorisation — B</div>
-  <div class="sidebar-field">
-    <label>Valeur actuelle (€)</label>
-    <input type="number" id="b-valeur-bien" value="290000" min="1" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Appréciation annuelle (%)</label>
-    <input type="number" id="b-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
-  </div>
-</div>
+        <div class="sidebar-group-title">Type de projet — B</div>
+        <div class="sidebar-field">
+          <select id="b-type-projet" onchange="onTypeChange('b')">
+            <option value="ancien">Ancien</option>
+            <option value="neuf">Neuf</option>
+            <option value="vefa">VEFA</option>
+          </select>
+        </div>
+        <div class="sidebar-field">
+          <label>Prix du projet (€)</label>
+          <input type="number" id="b-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Apport personnel (€)</label>
+          <input type="number" id="b-apport" value="40000" min="0" step="1000" oninput="onInput()">
+        </div>
+        <div id="b-capital-display"></div>
+      </div>
+
+      <!-- PRÊT PRINCIPAL B -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Prêt principal — B</div>
+        <div class="sidebar-field">
+          <label>Taux nominal annuel (%)</label>
+          <input type="number" id="b-taux" value="3.70" min="0" max="30" step="0.01" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Durée (années)</label>
+          <input type="number" id="b-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Taux assurance annuel (%)</label>
+          <input type="number" id="b-assurance" value="0.36" min="0" max="5" step="0.01" oninput="onInput()">
+        </div>
+      </div>
+
+      <!-- FRAIS B -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Frais — B</div>
+        <div class="sidebar-field">
+          <label>Frais de notaire (%) <span class="badge" id="b-notaire-badge">[7–8,5 %]</span></label>
+          <input type="number" id="b-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Frais de dossier (€) <span class="badge">[500–1 500 €]</span></label>
+          <input type="number" id="b-dossier" value="1000" min="500" max="1500" step="100" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Frais de garantie (%) <span class="badge">[1–2 %]</span></label>
+          <input type="number" id="b-garantie-pct" value="1.5" min="1" max="2" step="0.1" oninput="onInput()">
+        </div>
+      </div>
+
+      <!-- TRAVAUX B -->
+      <div class="sidebar-group" id="b-travaux-section">
+        <div class="sidebar-group-title">Travaux — B</div>
+        <div class="sidebar-field">
+          <label>Surface (m²)</label>
+          <input type="number" id="b-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('b','m2')">
+        </div>
+        <div class="sidebar-field">
+          <label>Prix au m² (€)</label>
+          <input type="number" id="b-travaux-prix-m2" value="0" min="0" step="10" oninput="onTravauxInput('b','prix-m2')">
+        </div>
+        <div class="sidebar-field">
+          <label>Total travaux (€)</label>
+          <input type="number" id="b-travaux-total" value="0" min="0" step="100" oninput="onTravauxInput('b','total')">
+        </div>
+      </div>
+
+      <!-- DIFFÉRÉ B -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Différé — B</div>
+        <div class="sidebar-field">
+          <label>Durée du différé (mois)</label>
+          <input type="number" id="b-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Type de différé</label>
+          <select id="b-differe-type" onchange="onInput()">
+            <option value="partiel">Partiel</option>
+            <option value="total">Total</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PTZ B -->
+      <div class="sidebar-group" id="b-ptz-group">
+        <div class="sidebar-group-title">PTZ — B</div>
+        <div class="sidebar-field">
+          <label>Montant PTZ (€)</label>
+          <input type="number" id="b-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Durée PTZ</label>
+          <span class="ptz-fixed-label">10 ans (fixe)</span>
+          <input type="hidden" id="b-ptz-duree" value="10">
+          <input type="hidden" id="b-ptz-differe" value="0">
+        </div>
+      </div>
+
+      <!-- VALORISATION B -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Valorisation — B</div>
+        <div class="sidebar-field">
+          <label>Appréciation annuelle (%)</label>
+          <input type="number" id="b-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
+        </div>
+      </div>
+
       <div class="sidebar-footer">
         <button class="btn-scenario btn-danger" onclick="toggleScenarioB()">✕ Supprimer scénario B</button>
       </div>
@@ -1022,19 +1057,21 @@ function toggleTableauMode(mode) {
 
   if (scenarioBActif) {
     // Pré-remplir B avec les valeurs de A
-    const ids = ['capital','taux','duree','assurance','apport','notaire',
-                 'dossier','garantie','differe-mois','ptz-montant',
-                 'ptz-duree','ptz-differe','valeur-bien','apprec'];
+    const ids = ['prix-projet','taux','duree','assurance','apport','notaire',
+                 'dossier','garantie-pct','differe-mois',
+                 'ptz-montant','travaux-m2','travaux-prix-m2','travaux-total','apprec'];
     ids.forEach(id => {
       const src = document.getElementById(`a-${id}`);
       const dst = document.getElementById(`b-${id}`);
       if (src && dst) dst.value = src.value;
     });
-    const srcType = document.getElementById('a-differe-type');
-    const dstType = document.getElementById('b-differe-type');
-    if (srcType && dstType) dstType.value = srcType.value;
+    ['differe-type','type-projet'].forEach(id => {
+      const src = document.getElementById(`a-${id}`);
+      const dst = document.getElementById(`b-${id}`);
+      if (src && dst) dst.value = src.value;
+    });
+    onTypeChange('b');
   } else {
-    // Réinitialiser les charts pour repasser en vue simple
     [chartPrincipal, chartSecondaire, chartDonut].forEach(c => { if (c) c.destroy(); });
     chartPrincipal = null; chartSecondaire = null; chartDonut = null;
   }
