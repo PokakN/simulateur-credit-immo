@@ -653,10 +653,12 @@
 
     const interetsTotaux = rows.reduce((s, r) => s + r.interets, 0);
     const assuranceTotale = rows.reduce((s, r) => s + r.assurance, 0);
-    const fraisNotaire = p.valeurBien * p.fraisNotairePct / 100;
+    const fraisNotaire = p.fraisNotaire;   // déjà calculé dans lireParams
     const coutCredit = interetsTotaux + assuranceTotale;
-    const coutTotalOperation = p.capital + interetsTotaux + assuranceTotale
-      + fraisNotaire + p.fraisDossier + p.fraisGarantie - p.apport;
+    // total dépensé = prix d'acquisition + coût du financement
+    const coutTotalOperation = (p.prixProjet || p.capital) + (p.travaux || 0)
+      + p.fraisNotaire + p.fraisDossier + p.fraisGarantie
+      + interetsTotaux + assuranceTotale;
 
     // Mensualité post-différé (première ligne hors période de différé)
     const postDiffereRow = rows[p.differeMois] || rows[0];
