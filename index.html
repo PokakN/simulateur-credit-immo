@@ -239,89 +239,121 @@
 
     <!-- ===== SIDEBAR A ===== -->
     <aside class="sidebar" id="sidebar-a">
+
+      <!-- PROJET -->
       <div class="sidebar-group">
-  <div class="sidebar-group-title">Prêt principal</div>
-  <div class="sidebar-field">
-    <label>Montant emprunté (€)</label>
-    <input type="number" id="a-capital" value="250000" min="1000" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Taux nominal annuel (%)</label>
-    <input type="number" id="a-taux" value="3.70" min="0" max="30" step="0.01" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Durée (années)</label>
-    <input type="number" id="a-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Taux assurance annuel (%)</label>
-    <input type="number" id="a-assurance" value="0.36" min="0" max="5" step="0.01" oninput="onInput()">
-  </div>
-</div>
+        <div class="sidebar-group-title">Type de projet</div>
+        <div class="sidebar-field">
+          <select id="a-type-projet" onchange="onTypeChange('a')">
+            <option value="ancien">Ancien</option>
+            <option value="neuf">Neuf</option>
+            <option value="vefa">VEFA</option>
+          </select>
+        </div>
+        <div class="sidebar-field">
+          <label>Prix du projet (€)</label>
+          <input type="number" id="a-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Apport personnel (€)</label>
+          <input type="number" id="a-apport" value="40000" min="0" step="1000" oninput="onInput()">
+        </div>
+        <div id="a-capital-display"></div>
+      </div>
 
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Apport &amp; frais</div>
-  <div class="sidebar-field">
-    <label>Apport personnel (€)</label>
-    <input type="number" id="a-apport" value="40000" min="0" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de notaire (%)</label>
-    <input type="number" id="a-notaire" value="7.5" min="0" max="15" step="0.1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de dossier (€)</label>
-    <input type="number" id="a-dossier" value="1000" min="0" step="100" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Frais de garantie (€)</label>
-    <input type="number" id="a-garantie" value="2000" min="0" step="100" oninput="onInput()">
-  </div>
-</div>
+      <!-- PRÊT PRINCIPAL -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Prêt principal</div>
+        <div class="sidebar-field">
+          <label>Taux nominal annuel (%)</label>
+          <input type="number" id="a-taux" value="3.70" min="0" max="30" step="0.01" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Durée (années)</label>
+          <input type="number" id="a-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Taux assurance annuel (%)</label>
+          <input type="number" id="a-assurance" value="0.36" min="0" max="5" step="0.01" oninput="onInput()">
+        </div>
+      </div>
 
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Différé</div>
-  <div class="sidebar-field">
-    <label>Durée du différé (mois)</label>
-    <input type="number" id="a-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Type de différé</label>
-    <select id="a-differe-type" onchange="onInput()">
-      <option value="partiel">Partiel (intérêts seuls)</option>
-      <option value="total">Total (aucun paiement)</option>
-    </select>
-  </div>
-</div>
+      <!-- FRAIS -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Frais</div>
+        <div class="sidebar-field">
+          <label>Frais de notaire (%) <span class="badge" id="a-notaire-badge">[7–8,5 %]</span></label>
+          <input type="number" id="a-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Frais de dossier (€) <span class="badge">[500–1 500 €]</span></label>
+          <input type="number" id="a-dossier" value="1000" min="500" max="1500" step="100" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Frais de garantie (%) <span class="badge">[1–2 %]</span></label>
+          <input type="number" id="a-garantie-pct" value="1.5" min="1" max="2" step="0.1" oninput="onInput()">
+        </div>
+      </div>
 
-<div class="sidebar-group">
-  <div class="sidebar-group-title">PTZ</div>
-  <div class="sidebar-field">
-    <label>Montant PTZ (€)</label>
-    <input type="number" id="a-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Durée PTZ (années)</label>
-    <input type="number" id="a-ptz-duree" value="0" min="0" max="25" step="1" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Différé PTZ (mois)</label>
-    <input type="number" id="a-ptz-differe" value="0" min="0" max="120" step="1" oninput="onInput()">
-  </div>
-</div>
+      <!-- TRAVAUX -->
+      <div class="sidebar-group" id="a-travaux-section">
+        <div class="sidebar-group-title">Travaux</div>
+        <div class="sidebar-field">
+          <label>Surface (m²)</label>
+          <input type="number" id="a-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('a','m2')">
+        </div>
+        <div class="sidebar-field">
+          <label>Prix au m² (€)</label>
+          <input type="number" id="a-travaux-prix-m2" value="0" min="0" step="10" oninput="onTravauxInput('a','prix-m2')">
+        </div>
+        <div class="sidebar-field">
+          <label>Total travaux (€)</label>
+          <input type="number" id="a-travaux-total" value="0" min="0" step="100" oninput="onTravauxInput('a','total')">
+        </div>
+      </div>
 
-<div class="sidebar-group">
-  <div class="sidebar-group-title">Valorisation du bien</div>
-  <div class="sidebar-field">
-    <label>Valeur actuelle (€)</label>
-    <input type="number" id="a-valeur-bien" value="290000" min="1" step="1000" oninput="onInput()">
-  </div>
-  <div class="sidebar-field">
-    <label>Appréciation annuelle (%)</label>
-    <input type="number" id="a-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
-  </div>
-</div>
+      <!-- DIFFÉRÉ -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Différé</div>
+        <div class="sidebar-field">
+          <label>Durée du différé (mois)</label>
+          <input type="number" id="a-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Type de différé</label>
+          <select id="a-differe-type" onchange="onInput()">
+            <option value="partiel">Partiel (intérêts seuls)</option>
+            <option value="total">Total (aucun paiement)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PTZ -->
+      <div class="sidebar-group" id="a-ptz-group">
+        <div class="sidebar-group-title">PTZ</div>
+        <div class="sidebar-field">
+          <label>Montant PTZ (€)</label>
+          <input type="number" id="a-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
+        </div>
+        <div class="sidebar-field">
+          <label>Durée PTZ</label>
+          <span class="ptz-fixed-label">10 ans (fixe)</span>
+          <input type="hidden" id="a-ptz-duree" value="10">
+          <input type="hidden" id="a-ptz-differe" value="0">
+        </div>
+      </div>
+
+      <!-- VALORISATION -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Valorisation du bien</div>
+        <div class="sidebar-field">
+          <label>Appréciation annuelle (%)</label>
+          <input type="number" id="a-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
+        </div>
+      </div>
+
       <div class="sidebar-footer">
+        <button class="btn-projets" onclick="openProjetsPanel()">💾 Projets sauvegardés</button>
         <button class="btn-scenario" onclick="toggleScenarioB()">+ Ajouter scénario B</button>
       </div>
     </aside>
