@@ -233,6 +233,31 @@
   z-index: 200; opacity: 0; transition: opacity .3s; pointer-events: none;
 }
 .toast.show { opacity: 1; }
+
+/* ---- SECTION EMPRUNTS ---- */
+.tranche-card {
+  background: #0f172a; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px;
+}
+.tranche-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+}
+.tranche-label-text { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.tranche-badge {
+  font-size: 9px; color: #64748b; background: #1e293b;
+  border-radius: 3px; padding: 1px 5px; margin-left: 5px;
+}
+.tranche-del {
+  background: none; border: none; color: #475569; cursor: pointer; font-size: 16px; padding: 0 2px; line-height: 1;
+}
+.tranche-del:hover { color: #f87171; }
+.tranche-montant-calc { font-size: 13px; font-weight: 700; color: #60a5fa; margin-top: 4px; }
+.tranche-info { font-size: 10px; color: #64748b; margin-top: 3px; }
+.btn-add-tranche {
+  width: 100%; background: transparent; color: #475569;
+  border: 1px dashed #334155; border-radius: 5px; padding: 5px;
+  font-size: 11px; cursor: pointer; margin-top: 4px; transition: color .15s, border-color .15s;
+}
+.btn-add-tranche:hover { color: #60a5fa; border-color: #60a5fa; }
   </style>
 </head>
 <body>
@@ -262,21 +287,15 @@
         <div id="a-capital-display"></div>
       </div>
 
-      <!-- PRÊT PRINCIPAL -->
+      <!-- EMPRUNTS -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Prêt principal</div>
-        <div class="sidebar-field">
-          <label>Taux nominal annuel (%)</label>
-          <input type="number" id="a-taux" value="3.40" min="0" max="30" step="0.01" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Durée (années)</label>
-          <input type="number" id="a-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
-        </div>
+        <div class="sidebar-group-title">Emprunts</div>
         <div class="sidebar-field">
           <label>Taux assurance annuel (%)</label>
           <input type="number" id="a-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
         </div>
+        <div id="a-tranches-list"></div>
+        <button class="btn-add-tranche" onclick="addTranche('a')">+ Ajouter un prêt</button>
       </div>
 
       <!-- FRAIS -->
@@ -329,26 +348,6 @@
         </div>
       </div>
 
-      <!-- PTZ -->
-      <div class="sidebar-group" id="a-ptz-group">
-        <div class="sidebar-group-title">PTZ</div>
-        <div class="sidebar-field">
-          <label>Montant PTZ (€)</label>
-          <input type="number" id="a-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Durée PTZ</label>
-          <span class="ptz-fixed-label">10 ans (fixe) — remboursé sur 120 mensualités</span>
-          <input type="hidden" id="a-ptz-duree" value="10">
-          <input type="hidden" id="a-ptz-differe" value="0">
-        </div>
-        <div id="a-ptz-info" style="display:none;background:#0f172a;border-radius:6px;padding:8px 10px;margin-top:4px">
-          <span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;display:block">Mensualité PTZ</span>
-          <span id="a-ptz-mensualite-display" style="font-size:14px;font-weight:700;color:#e2e8f0;display:block;margin:2px 0"></span>
-          <span style="font-size:10px;color:#94a3b8">pendant 10 ans · puis libéré</span>
-        </div>
-      </div>
-
       <!-- VALORISATION -->
       <div class="sidebar-group">
         <div class="sidebar-group-title">Valorisation du bien</div>
@@ -388,21 +387,15 @@
         <div id="b-capital-display"></div>
       </div>
 
-      <!-- PRÊT PRINCIPAL B -->
+      <!-- EMPRUNTS B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Prêt principal — B</div>
-        <div class="sidebar-field">
-          <label>Taux nominal annuel (%)</label>
-          <input type="number" id="b-taux" value="3.40" min="0" max="30" step="0.01" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Durée (années)</label>
-          <input type="number" id="b-duree" value="20" min="1" max="30" step="1" oninput="onInput()">
-        </div>
+        <div class="sidebar-group-title">Emprunts — B</div>
         <div class="sidebar-field">
           <label>Taux assurance annuel (%)</label>
           <input type="number" id="b-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
         </div>
+        <div id="b-tranches-list"></div>
+        <button class="btn-add-tranche" onclick="addTranche('b')">+ Ajouter un prêt</button>
       </div>
 
       <!-- FRAIS B -->
@@ -452,26 +445,6 @@
             <option value="partiel">Partiel</option>
             <option value="total">Total</option>
           </select>
-        </div>
-      </div>
-
-      <!-- PTZ B -->
-      <div class="sidebar-group" id="b-ptz-group">
-        <div class="sidebar-group-title">PTZ — B</div>
-        <div class="sidebar-field">
-          <label>Montant PTZ (€)</label>
-          <input type="number" id="b-ptz-montant" value="0" min="0" step="1000" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Durée PTZ</label>
-          <span class="ptz-fixed-label">10 ans (fixe) — remboursé sur 120 mensualités</span>
-          <input type="hidden" id="b-ptz-duree" value="10">
-          <input type="hidden" id="b-ptz-differe" value="0">
-        </div>
-        <div id="b-ptz-info" style="display:none;background:#0f172a;border-radius:6px;padding:8px 10px;margin-top:4px">
-          <span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;display:block">Mensualité PTZ</span>
-          <span id="b-ptz-mensualite-display" style="font-size:14px;font-weight:700;color:#e2e8f0;display:block;margin:2px 0"></span>
-          <span style="font-size:10px;color:#94a3b8">pendant 10 ans · puis libéré</span>
         </div>
       </div>
 
@@ -575,70 +548,94 @@
   }
 
   function calcAmortissement(p) {
-    const { capital, tauxNominal, duree, tauxAssurance,
-            differeMois, differeType,
-            ptzMontant, ptzDuree, ptzDiffere,
-            valeurBien, tauxApprec } = p;
+    const { tauxAssurance, differeMois, differeType, valeurBien, tauxApprec } = p;
 
-    const t = tauxNominal / 12 / 100;
-    const n = duree * 12;
-    const assuranceMensuelle = capital * tauxAssurance / 12 / 100;
+    // Build tranches list (backward compat: if no tranches array, use legacy fields)
+    const tranches = p.tranches && p.tranches.length > 0 ? p.tranches : [{
+      id: 'principal', isPrincipal: true, isPTZ: false,
+      montant: p.capital, taux: p.tauxNominal, duree: p.duree
+    }];
 
-    // Capital effectif après différé total (intérêts capitalisés)
-    const capitalApresDiffere = differeType === 'total'
-      ? capital * Math.pow(1 + t, differeMois)
-      : capital;
+    const principalTranche = tranches.find(t => t.isPrincipal) || tranches[0];
+    const n = (principalTranche.duree || 20) * 12;
 
-    const dureeEffective = n - differeMois;
-    const mensualite = tauxNominal === 0
-      ? capitalApresDiffere / dureeEffective
-      : capitalApresDiffere * t / (1 - Math.pow(1 + t, -dureeEffective));
+    // Assurance on total capital borrowed
+    const totalBorrowed = tranches.reduce((s, t) => s + (t.montant || 0), 0);
+    const assuranceMensuelle = totalBorrowed * tauxAssurance / 12 / 100;
 
-    // PTZ: mensualité fixe sans intérêts, après différé PTZ
-    const ptzN = ptzDuree * 12 - ptzDiffere;
-    const ptzMensualite = ptzMontant > 0 && ptzN > 0 ? ptzMontant / ptzN : 0;
+    // Compute per-tranche row schedules
+    const trancheSchedules = tranches.map(tr => {
+      const tt = tr.taux / 12 / 100;
+      const nn = tr.duree * 12;
+      const montant = tr.montant || 0;
+      if (montant <= 0) return Array(n).fill(null).map(() => ({ cap: 0, int: 0, cr: 0, ptz: 0, mens: 0 }));
 
-    const rows = [];
-    let capitalRestant = capital;
-    let ptzRestant = ptzMontant;
+      let cr = montant;
+      // For principal: apply deferral
+      const applyDiffere = tr.isPrincipal && differeMois > 0;
+      const capitalApresDiffere = applyDiffere && differeType === 'total'
+        ? montant * Math.pow(1 + tt, differeMois) : montant;
+      const dureeEff = applyDiffere ? nn - differeMois : nn;
+      const mens = tt === 0
+        ? montant / nn
+        : capitalApresDiffere * tt / (1 - Math.pow(1 + tt, -dureeEff));
 
-    for (let mois = 1; mois <= n; mois++) {
-      const enDiffere = mois <= differeMois;
-      const enDifferePTZ = mois <= ptzDiffere;
+      return Array.from({ length: n }, (_, i) => {
+        const mois = i + 1;
+        const inDiffere = tr.isPrincipal && mois <= differeMois;
 
-      const interets = capitalRestant * t;
-      let capitalRembourse = 0;
-
-      if (enDiffere) {
-        if (differeType === 'total') {
-          // Intérêts capitalisés — pas de paiement
-          capitalRestant = capitalRestant * (1 + t);
+        if (inDiffere) {
+          const intDiff = cr * tt;
+          if (differeType === 'total') cr *= (1 + tt);
+          return { cap: 0, int: inDiffere && differeType === 'partiel' ? intDiff : 0, cr, ptz: 0, mens: 0, inDiffere: true };
         }
-        // différé partiel : intérêts seuls payés, capital ne bouge pas
-      } else {
-        capitalRembourse = mensualite - interets;
-        capitalRestant = Math.max(0, capitalRestant - capitalRembourse);
-      }
+        if (mois > nn || cr <= 0) return { cap: 0, int: 0, cr: 0, ptz: 0, mens: 0 };
 
-      const ptzPaiement = !enDifferePTZ && ptzRestant > 0
-        ? Math.min(ptzMensualite, ptzRestant) : 0;
-      ptzRestant = Math.max(0, ptzRestant - ptzPaiement);
+        const intr = cr * tt;
+        const capR = Math.min(mens - intr, cr);
+        cr = Math.max(0, cr - capR);
+        return {
+          cap: capR,
+          int: tr.isPTZ ? 0 : intr,
+          cr,
+          ptz: tr.isPTZ ? capR : 0,
+          mens
+        };
+      });
+    });
+
+    // Merge per-month
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const mois = i + 1;
+      let sumCap = 0, sumInt = 0, sumCR = 0, sumPTZ = 0, sumMens = 0;
+      let enDiffere = false;
+      let differeInt = 0;
+
+      trancheSchedules.forEach((sched, j) => {
+        const r = sched[i];
+        sumCap += r.cap;
+        sumInt += r.int;
+        sumCR  += r.cr;
+        sumPTZ += r.ptz;
+        if (r.inDiffere) { enDiffere = true; differeInt += r.int; }
+        else if (r.mens > 0) sumMens += r.mens;
+      });
 
       const valeurBienMois = valeurBien * Math.pow(1 + tauxApprec / 100, mois / 12);
 
       const mensualiteLigne = enDiffere
-        ? (differeType === 'partiel' ? interets + assuranceMensuelle : assuranceMensuelle)
-        : mensualite + assuranceMensuelle + ptzPaiement;
+        ? (differeType === 'partiel' ? differeInt : 0) + assuranceMensuelle + sumMens
+        : sumMens + assuranceMensuelle;
 
       rows.push({
-        mois,
-        annee: Math.ceil(mois / 12),
+        mois, annee: Math.ceil(mois / 12),
         mensualite: mensualiteLigne,
-        capital: enDiffere ? 0 : capitalRembourse,
-        interets,
+        capital: sumCap,
+        interets: sumInt,
         assurance: assuranceMensuelle,
-        ptz: ptzPaiement,
-        capitalRestant,
+        ptz: sumPTZ,
+        capitalRestant: sumCR,
         valeurBien: valeurBienMois
       });
     }
@@ -674,7 +671,8 @@
     // Mensualité post-différé (première ligne hors période de différé)
     const postDiffereRow = rows[p.differeMois] || rows[0];
     const mensualite = postDiffereRow.mensualite;
-    const mensualiteAssurance = p.capital * p.tauxAssurance / 12 / 100;
+    const totalBorrowed = (p.tranches || []).reduce((s, t) => s + (t.montant || 0), 0) || p.capital;
+    const mensualiteAssurance = totalBorrowed * p.tauxAssurance / 12 / 100;
 
     // PTZ : deux phases (an 1–10 avec PTZ, an 11+ sans PTZ)
     const hasPTZ = p.ptzMontant > 0 && p.ptzDuree > 0;
@@ -731,6 +729,8 @@
       valeurBienTerme: Math.round(valeurBienTerme),
       plusValueNette: Math.round(plusValueNette),
       taeg,
+      duree: p.duree,
+      tauxApprec: p.tauxApprec,
       amortissement: rows,
       labelsParMois,
       capitalRestantParMois,
@@ -756,6 +756,144 @@
   let modeGraphique = 'A';
   let modeTableau = 'mois';
   let scenarioBActif = false;
+  let tranchesA = [];
+  let tranchesB = [];
+
+  function getTranches(prefix) { return prefix === 'a' ? tranchesA : tranchesB; }
+  function setTranches(prefix, arr) { if (prefix === 'a') tranchesA = arr; else tranchesB = arr; }
+
+  function initTranches(prefix, type) {
+    const existing = getTranches(prefix);
+    const principal = existing.find(t => t.isPrincipal);
+    const newPrincipal = {
+      id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false,
+      taux: principal?.taux ?? 3.40, duree: principal?.duree ?? 20
+    };
+    if (type === 'ancien') {
+      // Keep extra non-PTZ tranches, remove PTZ
+      const extras = existing.filter(t => !t.isPrincipal && !t.isPTZ);
+      setTranches(prefix, [newPrincipal, ...extras]);
+    } else {
+      const existingPTZ = existing.find(t => t.isPTZ);
+      const ptzTranche = {
+        id: 'ptz', label: 'PTZ', isPrincipal: false, isPTZ: true,
+        taux: 0, duree: 10, montant: existingPTZ?.montant ?? 30000
+      };
+      const extras = existing.filter(t => !t.isPrincipal && !t.isPTZ);
+      setTranches(prefix, [newPrincipal, ptzTranche, ...extras]);
+    }
+    renderTranchesUI(prefix);
+  }
+
+  function renderTranchesUI(prefix) {
+    const el = document.getElementById(`${prefix}-tranches-list`);
+    if (!el) return;
+    const tranches = getTranches(prefix);
+
+    // Compute derived principal montant
+    const pv = id => parseFloat(document.getElementById(`${prefix}-${id}`)?.value) || 0;
+    const prixProjet   = pv('prix-projet');
+    const apport       = pv('apport');
+    const tauxNotaire  = pv('notaire');
+    const fraisDossier = Math.max(500, Math.min(1500, pv('dossier')));
+    const tauxGarantie = Math.max(1, Math.min(2, pv('garantie-pct')));
+    const travaux      = pv('travaux-total');
+    const fraisNotaire = prixProjet * tauxNotaire / 100;
+    const base         = prixProjet + fraisNotaire + fraisDossier + travaux - apport;
+    const fraisGarantie = Math.max(0, base) * tauxGarantie / 100;
+    const capitalTotal  = Math.max(0, base + fraisGarantie);
+    const montantAutres = tranches.filter(t => !t.isPrincipal).reduce((s, t) => s + (t.montant || 0), 0);
+    const montantPrincipal = Math.max(0, capitalTotal - montantAutres);
+
+    el.innerHTML = tranches.map(t => {
+      const canDelete = !t.isPrincipal && !t.isPTZ;
+      const delBtn = canDelete
+        ? `<button class="tranche-del" onclick="removeTranche('${prefix}','${t.id}')" title="Supprimer">×</button>`
+        : '';
+
+      if (t.isPrincipal) {
+        return `<div class="tranche-card">
+          <div class="tranche-header">
+            <span class="tranche-label-text">${t.label}</span>
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Taux (%)</label>
+            <input type="number" value="${t.taux}" min="0" max="30" step="0.01"
+              oninput="onTrancheChange('${prefix}','${t.id}','taux',this.value)">
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Durée (ans)</label>
+            <input type="number" value="${t.duree}" min="1" max="30" step="1"
+              oninput="onTrancheChange('${prefix}','${t.id}','duree',this.value)">
+          </div>
+          <div class="tranche-montant-calc">${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span></div>
+        </div>`;
+      } else if (t.isPTZ) {
+        const ptzMens = (t.montant || 0) > 0 ? Math.round((t.montant || 0) / (t.duree * 12)) : 0;
+        return `<div class="tranche-card">
+          <div class="tranche-header">
+            <span class="tranche-label-text">${t.label}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span>
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Montant (€)</label>
+            <input type="number" value="${t.montant || 0}" min="0" step="1000"
+              oninput="onTrancheChange('${prefix}','${t.id}','montant',this.value)">
+          </div>
+          ${ptzMens > 0 ? `<div class="tranche-info">${fmtRaw(ptzMens)}/mois pendant ${t.duree} ans · puis libéré</div>` : ''}
+        </div>`;
+      } else {
+        return `<div class="tranche-card">
+          <div class="tranche-header">
+            <input type="text" value="${t.label}" style="background:transparent;border:none;color:#e2e8f0;font-size:11px;font-weight:700;width:calc(100% - 24px);outline:none"
+              oninput="onTrancheChange('${prefix}','${t.id}','label',this.value)">
+            ${delBtn}
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Taux (%)</label>
+            <input type="number" value="${t.taux}" min="0" max="30" step="0.01"
+              oninput="onTrancheChange('${prefix}','${t.id}','taux',this.value)">
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Durée (ans)</label>
+            <input type="number" value="${t.duree}" min="1" max="30" step="1"
+              oninput="onTrancheChange('${prefix}','${t.id}','duree',this.value)">
+          </div>
+          <div class="sidebar-field" style="margin-bottom:5px">
+            <label>Montant (€)</label>
+            <input type="number" value="${t.montant || 0}" min="0" step="1000"
+              oninput="onTrancheChange('${prefix}','${t.id}','montant',this.value)">
+          </div>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  function fmtRaw(n) {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €';
+  }
+
+  function onTrancheChange(prefix, id, field, value) {
+    const t = getTranches(prefix).find(t => t.id === id);
+    if (!t) return;
+    t[field] = (field === 'label') ? value : (parseFloat(value) || 0);
+    renderTranchesUI(prefix);
+    onInput();
+  }
+
+  function addTranche(prefix) {
+    getTranches(prefix).push({
+      id: 'extra-' + Date.now(), label: 'Prêt complémentaire',
+      isPrincipal: false, isPTZ: false, taux: 3.40, duree: 10, montant: 0
+    });
+    renderTranchesUI(prefix);
+    onInput();
+  }
+
+  function removeTranche(prefix, id) {
+    setTranches(prefix, getTranches(prefix).filter(t => t.id !== id));
+    renderTranchesUI(prefix);
+    onInput();
+  }
 
   const PRESETS = {
     neuf:   { notaire: 2.5, notaireMin: 2,   notaireMax: 3,   notaireBadge: '[2–3 %]',   ptz: 30000, travaux: true  },
@@ -777,10 +915,6 @@
     const badgeEl = document.getElementById(`${prefix}-notaire-badge`);
     if (badgeEl) badgeEl.textContent = p.notaireBadge;
 
-    // PTZ montant par défaut (seulement si actuellement à 0)
-    const ptzEl = document.getElementById(`${prefix}-ptz-montant`);
-    if (ptzEl && parseFloat(ptzEl.value) === 0) ptzEl.value = p.ptz;
-
     // Travaux : visible pour neuf et ancien, caché et remis à 0 pour vefa
     const travauxEl = document.getElementById(`${prefix}-travaux-section`);
     if (travauxEl) travauxEl.style.display = p.travaux ? 'block' : 'none';
@@ -791,14 +925,15 @@
       });
     }
 
-    // PTZ group : caché et remis à 0 pour ancien
-    const ptzGroup = document.getElementById(`${prefix}-ptz-group`);
-    if (ptzGroup) ptzGroup.style.display = type === 'ancien' ? 'none' : 'block';
-    if (type === 'ancien') {
-      const ptzReset = document.getElementById(`${prefix}-ptz-montant`);
-      if (ptzReset) ptzReset.value = 0;
+    // Update tranches for type (add/remove PTZ line)
+    const currentTranches = getTranches(prefix);
+    const hasPTZ = currentTranches.some(t => t.isPTZ);
+    const needsPTZ = type !== 'ancien';
+    if (currentTranches.length === 0 || (needsPTZ && !hasPTZ) || (!needsPTZ && hasPTZ)) {
+      initTranches(prefix, type);
+    } else {
+      renderTranchesUI(prefix);
     }
-
     onInput();
   }
 
@@ -830,32 +965,44 @@
     const tauxGarantie  = Math.max(1,   Math.min(2,    v('garantie-pct')));
     const travaux       = v('travaux-total');
 
-    const fraisNotaire     = prixProjet * tauxNotaire / 100;
-    const base             = prixProjet + fraisNotaire + fraisDossier + travaux - apport;
-    const fraisGarantie    = Math.max(0, base) * tauxGarantie / 100;
-    const capital          = Math.max(0, base + fraisGarantie);
+    const fraisNotaire  = prixProjet * tauxNotaire / 100;
+    const base          = prixProjet + fraisNotaire + fraisDossier + travaux - apport;
+    const fraisGarantie = Math.max(0, base) * tauxGarantie / 100;
+    const capitalTotal  = Math.max(0, base + fraisGarantie);
+
+    // Build resolved tranches (principal montant = capitalTotal - sum of others)
+    const rawTranches   = getTranches(prefix);
+    const montantAutres = rawTranches.filter(t => !t.isPrincipal).reduce((s, t) => s + (t.montant || 0), 0);
+    const montantPrincipal = Math.max(0, capitalTotal - montantAutres);
+    const tranches = rawTranches.map(t =>
+      t.isPrincipal ? { ...t, montant: montantPrincipal } : { ...t, montant: t.montant || 0 }
+    );
+
+    const principalTranche = tranches.find(t => t.isPrincipal);
+    const ptzTranche       = tranches.find(t => t.isPTZ);
 
     return {
-      capital,
+      capital:         capitalTotal,
       prixProjet,
-      tauxNominal:    v('taux'),
-      duree:          v('duree') || 1,
-      tauxAssurance:  v('assurance'),
+      tauxNominal:     principalTranche?.taux ?? 3.40,
+      duree:           principalTranche?.duree ?? 20,
+      tauxAssurance:   v('assurance'),
       apport,
       fraisNotairePct: tauxNotaire,
       fraisNotaire,
       fraisDossier,
       fraisGarantie,
       tauxGarantie,
-      differeMois:    v('differe-mois'),
-      differeType:    s('differe-type'),
-      ptzMontant:     v('ptz-montant'),
-      ptzDuree:       10,
-      ptzDiffere:     0,
-      valeurBien:     prixProjet || 1,
-      tauxApprec:     v('apprec'),
+      differeMois:     v('differe-mois'),
+      differeType:     s('differe-type'),
+      ptzMontant:      ptzTranche?.montant ?? 0,
+      ptzDuree:        ptzTranche?.duree ?? 10,
+      ptzDiffere:      0,
+      valeurBien:      prixProjet || 1,
+      tauxApprec:      v('apprec'),
       travaux,
-      typeProjet:     s('type-projet')
+      typeProjet:      s('type-projet'),
+      tranches
     };
   }
 
@@ -863,23 +1010,12 @@
     const el = document.getElementById(`${prefix}-capital-display`);
     if (!el) return;
     const frais = params.fraisNotaire + params.fraisDossier + params.fraisGarantie;
+    const totalBorrowed = (params.tranches || []).reduce((s, t) => s + (t.montant || 0), 0) || params.capital;
     el.innerHTML = `<div class="capital-display">
-      <span class="capital-label">Montant emprunté</span>
-      <span class="capital-value">${fmt(params.capital)}</span>
+      <span class="capital-label">Total emprunté</span>
+      <span class="capital-value">${fmt(totalBorrowed)}</span>
       <span class="capital-sub">dont frais : ${fmt(frais)}</span>
     </div>`;
-  }
-
-  function updatePTZDisplay(prefix, res) {
-    const infoEl = document.getElementById(`${prefix}-ptz-info`);
-    const valEl  = document.getElementById(`${prefix}-ptz-mensualite-display`);
-    if (!infoEl || !valEl) return;
-    if (res.ptzMensualiteM > 0) {
-      valEl.textContent = fmt(res.ptzMensualiteM) + '/mois';
-      infoEl.style.display = 'block';
-    } else {
-      infoEl.style.display = 'none';
-    }
   }
 
   function fmt(n) {
@@ -889,8 +1025,8 @@
 
   function _kpiHTML(res, prefix) {
     const pvClass = res.plusValueNette >= 0 ? 'kpi-value--green' : 'kpi-value--red';
-    const duree = parseFloat(document.getElementById(`${prefix}-duree`)?.value) || 20;
-    const tauxApprec = parseFloat(document.getElementById(`${prefix}-apprec`)?.value) || 0;
+    const duree = res.duree || 20;
+    const tauxApprec = res.tauxApprec || 0;
     return `
       <div class="kpi-card">
         <div class="kpi-label">Mensualité${res.mensualitePhase2 ? ' (an 1–10)' : ''}</div>
@@ -935,8 +1071,8 @@
       if (!resB) return;
       updateCapitalDisplay('a', pA);
       updateCapitalDisplay('b', pB);
-      updatePTZDisplay('a', resA);
-      updatePTZDisplay('b', resB);
+      renderTranchesUI('a');
+      renderTranchesUI('b');
       document.getElementById('kpis').innerHTML = `
         <div class="comparison-grid">
           <div>
@@ -954,7 +1090,7 @@
       renderTableau(resA.amortissement, pA.duree);
     } else {
       updateCapitalDisplay('a', pA);
-      updatePTZDisplay('a', resA);
+      renderTranchesUI('a');
       renderKPIs(resA);
       renderGraphiquePrincipal(resA, null);
       renderGraphiqueSecondaire(resA);
@@ -1243,9 +1379,9 @@ function toggleTableauMode(mode) {
 
   if (scenarioBActif) {
     // Pré-remplir B avec les valeurs de A
-    const ids = ['prix-projet','taux','duree','assurance','apport','notaire',
+    const ids = ['prix-projet','assurance','apport','notaire',
                  'dossier','garantie-pct','differe-mois',
-                 'ptz-montant','travaux-m2','travaux-prix-m2','travaux-total','apprec'];
+                 'travaux-m2','travaux-prix-m2','travaux-total','apprec'];
     ids.forEach(id => {
       const src = document.getElementById(`a-${id}`);
       const dst = document.getElementById(`b-${id}`);
@@ -1256,7 +1392,18 @@ function toggleTableauMode(mode) {
       const dst = document.getElementById(`b-${id}`);
       if (src && dst) dst.value = src.value;
     });
-    onTypeChange('b');
+    // Copy tranches from A to B
+    setTranches('b', JSON.parse(JSON.stringify(tranchesA)));
+    renderTranchesUI('b');
+    // Apply type presets (notaire badge etc) without reiniting tranches
+    const type = document.getElementById('b-type-projet')?.value || 'ancien';
+    const pr = PRESETS[type] || PRESETS.ancien;
+    const notaireEl = document.getElementById('b-notaire');
+    if (notaireEl) { notaireEl.min = pr.notaireMin; notaireEl.max = pr.notaireMax; notaireEl.value = pr.notaire; }
+    const badgeEl = document.getElementById('b-notaire-badge');
+    if (badgeEl) badgeEl.textContent = pr.notaireBadge;
+    const travauxEl = document.getElementById('b-travaux-section');
+    if (travauxEl) travauxEl.style.display = pr.travaux ? 'block' : 'none';
   } else {
     [chartPrincipal, chartSecondaire, chartDonut].forEach(c => { if (c) c.destroy(); });
     chartPrincipal = null; chartSecondaire = null; chartDonut = null;
@@ -1322,14 +1469,11 @@ function chargerProjet(id) {
   set('type-projet',    p.typeProjet  || 'ancien');
   set('prix-projet',    p.prixProjet);
   set('apport',         p.apport);
-  set('taux',           p.tauxNominal);
-  set('duree',          p.duree);
   set('assurance',      p.tauxAssurance);
   set('notaire',        p.fraisNotairePct);
   set('dossier',        p.fraisDossier);
   set('garantie-pct',   p.tauxGarantie ?? 1.5);
   set('differe-mois',   p.differeMois);
-  set('ptz-montant',    p.ptzMontant);
   set('travaux-m2',     0);
   set('travaux-prix-m2', 0);
   set('travaux-total',  p.travaux);
@@ -1337,6 +1481,15 @@ function chargerProjet(id) {
 
   const dtEl = document.getElementById('a-differe-type');
   if (dtEl) dtEl.value = p.differeType || 'partiel';
+
+  // Restore tranches (with backward compat for old saved projects)
+  if (p.tranches && Array.isArray(p.tranches) && p.tranches.length > 0) {
+    setTranches('a', JSON.parse(JSON.stringify(p.tranches)));
+  } else {
+    const fallback = [{ id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false, taux: p.tauxNominal ?? 3.40, duree: p.duree ?? 20 }];
+    if ((p.ptzMontant || 0) > 0) fallback.push({ id: 'ptz', label: 'PTZ', isPrincipal: false, isPTZ: true, taux: 0, duree: p.ptzDuree ?? 10, montant: p.ptzMontant });
+    setTranches('a', fallback);
+  }
 
   closeProjetsPanel();
   onTypeChange('a');
@@ -1459,19 +1612,24 @@ function restaurerDepuisURL() {
     set('type-projet',    p.typeProjet  || 'ancien');
     set('prix-projet',    p.prixProjet);
     set('apport',         p.apport);
-    set('taux',           p.tauxNominal);
-    set('duree',          p.duree);
     set('assurance',      p.tauxAssurance);
     set('notaire',        p.fraisNotairePct);
     set('dossier',        p.fraisDossier);
     set('garantie-pct',   p.tauxGarantie ?? 1.5);
     set('differe-mois',   p.differeMois);
-    set('ptz-montant',    p.ptzMontant);
     set('travaux-total',  p.travaux);
     set('apprec',         p.tauxApprec);
 
     const dtEl = document.getElementById('a-differe-type');
     if (dtEl) dtEl.value = p.differeType || 'partiel';
+
+    if (p.tranches && Array.isArray(p.tranches) && p.tranches.length > 0) {
+      setTranches('a', JSON.parse(JSON.stringify(p.tranches)));
+    } else {
+      const fallback = [{ id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false, taux: p.tauxNominal ?? 3.40, duree: p.duree ?? 20 }];
+      if ((p.ptzMontant || 0) > 0) fallback.push({ id: 'ptz', label: 'PTZ', isPrincipal: false, isPTZ: true, taux: 0, duree: p.ptzDuree ?? 10, montant: p.ptzMontant });
+      setTranches('a', fallback);
+    }
 
     showToast('Projet chargé depuis le lien partagé');
   } catch {
@@ -1481,6 +1639,10 @@ function restaurerDepuisURL() {
 
   // Init
   restaurerDepuisURL();
+  // If URL state didn't set tranches, start with defaults for Ancien
+  if (tranchesA.length === 0) {
+    setTranches('a', [{ id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false, taux: 3.40, duree: 20 }]);
+  }
   onTypeChange('a');
   </script>
 </body>
