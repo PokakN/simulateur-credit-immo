@@ -826,7 +826,7 @@
             <input type="number" value="${t.duree}" min="1" max="30" step="1"
               oninput="onTrancheChange('${prefix}','${t.id}','duree',this.value)">
           </div>
-          <div class="tranche-montant-calc">${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span></div>
+          <div class="tranche-montant-calc" id="${prefix}-tranche-montant-${t.id}">${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span></div>
         </div>`;
       } else if (t.isPTZ) {
         const ptzMens = (t.montant || 0) > 0 ? Math.round((t.montant || 0) / (t.duree * 12)) : 0;
@@ -839,7 +839,7 @@
             <input type="number" value="${t.montant || 0}" min="0" step="1000"
               oninput="onTrancheChange('${prefix}','${t.id}','montant',this.value)">
           </div>
-          ${ptzMens > 0 ? `<div class="tranche-info">${fmtRaw(ptzMens)}/mois pendant ${t.duree} ans · puis libéré</div>` : ''}
+          <div class="tranche-info" id="${prefix}-tranche-info-${t.id}" style="${ptzMens > 0 ? '' : 'display:none'}">${ptzMens > 0 ? fmtRaw(ptzMens) + '/mois pendant ' + t.duree + ' ans · puis libéré' : ''}</div>
         </div>`;
       } else {
         return `<div class="tranche-card">
@@ -872,11 +872,53 @@
     return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €';
   }
 
+  // Met à jour uniquement les valeurs calculées affichées dans les tranches
+  // (montant du prêt principal, mensualité PTZ) sans reconstruire le HTML —
+  // évite de perdre le focus / curseur pendant la saisie
+  function refreshTrancheDerivedValues(prefix) {
+    const tranches = getTranches(prefix);
+    if (!tranches.length) return;
+
+    const pv = id => parseFloat(document.getElementById(`${prefix}-${id}`)?.value) || 0;
+    const prixProjet   = pv('prix-projet');
+    const apport       = pv('apport');
+    const tauxNotaire  = pv('notaire');
+    const fraisDossier = Math.max(500, Math.min(1500, pv('dossier')));
+    const tauxGarantie = Math.max(1, Math.min(2, pv('garantie-pct')));
+    const travaux      = pv('travaux-total');
+    const fraisNotaire = prixProjet * tauxNotaire / 100;
+    const base         = prixProjet + fraisNotaire + fraisDossier + travaux - apport;
+    const fraisGarantie = Math.max(0, base) * tauxGarantie / 100;
+    const capitalTotal  = Math.max(0, base + fraisGarantie);
+    const montantAutres = tranches.filter(t => !t.isPrincipal).reduce((s, t) => s + (t.montant || 0), 0);
+    const montantPrincipal = Math.max(0, capitalTotal - montantAutres);
+
+    const principal = tranches.find(t => t.isPrincipal);
+    if (principal) {
+      const el = document.getElementById(`${prefix}-tranche-montant-${principal.id}`);
+      if (el) el.innerHTML = `${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span>`;
+    }
+    const ptz = tranches.find(t => t.isPTZ);
+    if (ptz) {
+      const el = document.getElementById(`${prefix}-tranche-info-${ptz.id}`);
+      if (el) {
+        const ptzMens = (ptz.montant || 0) > 0 ? Math.round((ptz.montant || 0) / (ptz.duree * 12)) : 0;
+        if (ptzMens > 0) {
+          el.style.display = '';
+          el.textContent = `${fmtRaw(ptzMens)}/mois pendant ${ptz.duree} ans · puis libéré`;
+        } else {
+          el.style.display = 'none';
+          el.textContent = '';
+        }
+      }
+    }
+  }
+
   function onTrancheChange(prefix, id, field, value) {
     const t = getTranches(prefix).find(t => t.id === id);
     if (!t) return;
     t[field] = (field === 'label') ? value : (parseFloat(value) || 0);
-    renderTranchesUI(prefix);
+    refreshTrancheDerivedValues(prefix);
     onInput();
   }
 
@@ -1071,8 +1113,8 @@
       if (!resB) return;
       updateCapitalDisplay('a', pA);
       updateCapitalDisplay('b', pB);
-      renderTranchesUI('a');
-      renderTranchesUI('b');
+      refreshTrancheDerivedValues('a');
+      refreshTrancheDerivedValues('b');
       document.getElementById('kpis').innerHTML = `
         <div class="comparison-grid">
           <div>
@@ -1090,7 +1132,7 @@
       renderTableau(resA.amortissement, pA.duree);
     } else {
       updateCapitalDisplay('a', pA);
-      renderTranchesUI('a');
+      refreshTrancheDerivedValues('a');
       renderKPIs(resA);
       renderGraphiquePrincipal(resA, null);
       renderGraphiqueSecondaire(resA);
