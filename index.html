@@ -1786,6 +1786,34 @@ function sauvegarderProjet() {
   showToast(`Projet "${nom}" sauvegardé`);
 }
 
+function mettreAJourProjet(id) {
+  const projets = chargerProjets();
+  const idx = projets.findIndex(p => p.id === id);
+  if (idx === -1) return;
+
+  const nomSaisi = document.getElementById('projet-nom')?.value?.trim();
+  const urlSaisie = document.getElementById('projet-url')?.value?.trim();
+  const params = lireParams('a');
+  const res = calcSimulation(params);
+  const projet = projets[idx];
+
+  projets[idx] = {
+    ...projet,
+    nom: nomSaisi || projet.nom,
+    urlAnnonce: urlSaisie || projet.urlAnnonce,
+    typeProjet: params.typeProjet,
+    date: new Date().toLocaleDateString('fr-FR'),
+    mensualite: res ? res.mensualite : 0,
+    params
+  };
+
+  sauvegarderProjets(projets);
+  renderProjetsList();
+  document.getElementById('projet-nom').value = '';
+  document.getElementById('projet-url').value = '';
+  showToast(`Projet "${projets[idx].nom}" mis à jour`);
+}
+
 function chargerProjet(id) {
   const projets = chargerProjets();
   const projet = projets.find(p => p.id === id);
@@ -1883,6 +1911,7 @@ function renderProjetsList() {
       ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${p.urlAnnonce}" target="_blank" rel="noopener">→ Voir l'annonce</a></div>` : ''}
       <div class="projet-card-actions">
         <button onclick="chargerProjet('${p.id}')">Charger</button>
+        <button onclick="mettreAJourProjet('${p.id}')">Mettre à jour</button>
         <button onclick="partagerProjet('${p.id}')">Partager</button>
         <button onclick="supprimerProjet('${p.id}')" style="color:var(--brick);border-color:var(--brick)">Suppr.</button>
       </div>
