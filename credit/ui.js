@@ -322,6 +322,42 @@
     </div>`;
   }
 
+  function fmtDelta(delta, fmtFn) {
+    if (delta === 0) return '=';
+    return (delta > 0 ? '+' : '−') + fmtFn(Math.abs(delta));
+  }
+
+  function renderComparisonStrip(resA, resB) {
+    var rows = [
+      { label: 'Mensualité',           a: resA.mensualite,         b: resB.mensualite,         fmt: fmt },
+      { label: 'Coût total opération', a: resA.coutTotalOperation, b: resB.coutTotalOperation, fmt: fmt },
+      { label: 'Plus-value nette',     a: resA.plusValueNette,     b: resB.plusValueNette,     fmt: fmt },
+      { label: 'TAEG',                 a: resA.taeg,               b: resB.taeg,               fmt: fmtPct },
+      { label: 'Mois de rentabilité',  a: resA.moisRentabilite,    b: resB.moisRentabilite,    fmt: function(n) { return n ? 'Mois ' + n : '—'; }, noDelta: true }
+    ];
+    var body = rows.map(function(r) {
+      var deltaTxt = '', deltaClass = '';
+      if (!r.noDelta) {
+        var delta = r.b - r.a;
+        deltaTxt = fmtDelta(delta, r.fmt);
+        deltaClass = delta === 0 ? '' : (delta <= 0 ? 'comparison-delta--good' : 'comparison-delta--bad');
+      }
+      return '<div class="comparison-row">' +
+        '<span class="comparison-label">' + r.label + '</span>' +
+        '<span class="comparison-value comparison-value--a">' + r.fmt(r.a) + '</span>' +
+        '<span class="comparison-delta ' + deltaClass + '">' + deltaTxt + '</span>' +
+        '<span class="comparison-value comparison-value--b">' + r.fmt(r.b) + '</span>' +
+        '</div>';
+    }).join('');
+    document.getElementById('comparison-strip').innerHTML =
+      '<div class="comparison-strip-header">' +
+      '<span class="scenario-label">·</span>' +
+      '<span class="scenario-label scenario-a-label">Scénario A</span>' +
+      '<span class="scenario-label">Δ</span>' +
+      '<span class="scenario-label scenario-b-label">Scénario B</span>' +
+      '</div>' + body;
+  }
+
   function _kpiHTML(res, prefix) {
     const pvClass = res.plusValueNette >= 0 ? 'kpi-value--green' : 'kpi-value--red';
     const duree = res.duree || 20;
@@ -363,51 +399,41 @@
   }
 
   function onInput() {
-    const pA = lireParams('a');
+    var pA = lireParams('a');
     if (pA.capital <= 0 || pA.duree < 1) return;
-    const resA = calcSimulation(pA);
+    var resA = calcSimulation(pA);
     if (!resA) return;
 
+    updateCapitalDisplay('a', pA);
+    refreshTrancheDerivedValues('a');
+    renderKPIs(resA);
+
+    var stripEl = document.getElementById('comparison-strip');
     if (scenarioBActif) {
-      const pB = lireParams('b');
-      if (pB.capital <= 0 || pB.duree < 1) return;
-      const resB = calcSimulation(pB);
-      if (!resB) return;
-      updateCapitalDisplay('a', pA);
-      updateCapitalDisplay('b', pB);
-      refreshTrancheDerivedValues('a');
-      refreshTrancheDerivedValues('b');
-      document.getElementById('kpis').innerHTML = `
-        <div class="comparison-grid">
-          <div>
-            <div class="scenario-label scenario-a-label">Scénario A</div>
-            <div class="kpis">${_kpiHTML(resA, 'a')}</div>
-          </div>
-          <div>
-            <div class="scenario-label scenario-b-label">Scénario B</div>
-            <div class="kpis">${_kpiHTML(resB, 'b')}</div>
-          </div>
-        </div>`;
-      renderGraphiquePrincipal(resA, resB);
-      renderGraphiqueSecondaire(resA);
-      renderDonut(resA);
-      renderRecapFrais(pA);
-      renderRecapFinancement(pA, resA);
-      renderTableau(resA.amortissement, pA.duree);
+      var pB = lireParams('b');
+      if (pB.capital > 0 && pB.duree >= 1) {
+        var resB = calcSimulation(pB);
+        if (resB) {
+          updateCapitalDisplay('b', pB);
+          refreshTrancheDerivedValues('b');
+          renderComparisonStrip(resA, resB);
+          stripEl.style.display = '';
+        }
+      }
     } else {
-      updateCapitalDisplay('a', pA);
-      refreshTrancheDerivedValues('a');
-      renderKPIs(resA);
-      renderGraphiquePrincipal(resA, null);
-      renderGraphiqueSecondaire(resA);
-      renderDonut(resA);
-      renderRecapFrais(pA);
-      renderRecapFinancement(pA, resA);
-      renderTableau(resA.amortissement, pA.duree);
+      stripEl.style.display = 'none';
+      stripEl.innerHTML = '';
     }
+
+    renderGraphiquePrincipal(resA);
+    renderGraphiqueSecondaire(resA);
+    renderDonut(resA);
+    renderRecapFrais(pA);
+    renderRecapFinancement(pA, resA);
+    renderTableau(resA.amortissement, pA.duree);
   }
 
-  function renderGraphiquePrincipal(res, resB) {
+  function renderGraphiquePrincipal(res) {
     const ctx = document.getElementById('chart-principal').getContext('2d');
 
     let titleBase, cross = '', datasets;
@@ -416,7 +442,7 @@
       titleBase = 'Gain net potentiel à la revente (hors apport)';
       datasets = [
         {
-          label: 'Gain net' + (resB ? ' — A' : ''),
+          label: 'Gain net',
           data: res.gainNetReventeParMois,
           borderColor: '#5b80a8',
           backgroundColor: 'rgba(91,128,168,0.14)',
@@ -430,15 +456,6 @@
           fill: false, tension: 0, borderWidth: 1.5, pointRadius: 0
         }
       ];
-      if (resB) {
-        datasets.push({
-          label: 'Gain net — B',
-          data: resB.gainNetReventeParMois,
-          borderColor: '#c1652f',
-          borderDash: [4, 2],
-          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-        });
-      }
       if (res.moisRentabilite === 1) {
         cross = ' — ✓ Rentable dès le 1ᵉʳ mois';
       } else if (res.moisRentabilite) {
@@ -450,36 +467,20 @@
       titleBase = 'Capital restant dû vs Valeur du bien';
       datasets = [
         {
-          label: 'Capital restant dû' + (resB ? ' — A' : ''),
+          label: 'Capital restant dû',
           data: res.capitalRestantParMois,
           borderColor: '#5b80a8',
           backgroundColor: 'rgba(91,128,168,0.10)',
           fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
         },
         {
-          label: 'Valeur du bien' + (resB ? ' — A' : ''),
+          label: 'Valeur du bien',
           data: res.valeurBienParMois,
           borderColor: '#71956b',
           borderDash: [6, 3],
           fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
         }
       ];
-      if (resB) {
-        datasets.push({
-          label: 'Capital restant dû — B',
-          data: resB.capitalRestantParMois,
-          borderColor: '#c1652f',
-          borderDash: [4, 2],
-          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-        });
-        datasets.push({
-          label: 'Valeur du bien — B',
-          data: resB.valeurBienParMois,
-          borderColor: '#9b6fa3',
-          borderDash: [6, 3],
-          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-        });
-      }
       if (res.moisCroisement === 1) {
         cross = ' — ✓ Bien déjà supérieur à la dette';
       } else if (res.moisCroisement) {

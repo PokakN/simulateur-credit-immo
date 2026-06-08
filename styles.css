@@ -234,7 +234,6 @@
     .col-valeur { color: var(--sage); }
 
     /* ---- COMPARAISON ---- */
-    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; grid-column: 1 / -1; }
     .recap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .scenario-label {
       font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
@@ -251,7 +250,6 @@
       .params-section, .content { height: auto; overflow-y: visible; }
       .params-section { width: 100%; min-width: 0; max-width: none; }
       .charts-row { grid-template-columns: 1fr; }
-      .comparison-grid { grid-template-columns: 1fr; }
       .recap-row { grid-template-columns: 1fr; }
     }
 
@@ -397,3 +395,28 @@
   background: rgba(138,166,196,.18); color: var(--parchment-muted);
   border-radius: 2px; padding: 2px 6px; margin-left: 6px;
 }
+
+/* ---- COMPARAISON COMPACTE A/B ---- */
+.comparison-strip {
+  background: var(--paper); border-radius: 4px; padding: 16px 20px;
+  box-shadow: 0 10px 30px rgba(10,17,32,.3);
+}
+.comparison-strip-header {
+  display: grid; grid-template-columns: 1.4fr 1fr 0.8fr 1fr; gap: 10px;
+  padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid var(--paper-line);
+}
+.comparison-strip-header .scenario-label { margin-bottom: 0; text-align: right; }
+.comparison-strip-header .scenario-label:first-child { text-align: left; visibility: hidden; }
+.comparison-row {
+  display: grid; grid-template-columns: 1.4fr 1fr 0.8fr 1fr; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--paper-line);
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-text);
+}
+.comparison-row:last-child { border-bottom: none; }
+.comparison-label { color: var(--ink-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.comparison-value { font-weight: 600; text-align: right; }
+.comparison-value--a { color: var(--blueprint-soft); }
+.comparison-value--b { color: var(--rust); }
+.comparison-delta { text-align: center; font-size: 12px; }
+.comparison-delta--good { color: var(--sage); }
+.comparison-delta--bad { color: var(--brick); }
