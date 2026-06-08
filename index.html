@@ -4,263 +4,377 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulateur Crédit Immobilier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --sidebar-bg: #1e293b;
-      --sidebar-text: #e2e8f0;
-      --sidebar-muted: #94a3b8;
-      --sidebar-input-bg: #334155;
-      --content-bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --blue: #2563eb;
-      --red: #dc2626;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --font: system-ui, -apple-system, sans-serif;
+      --ink: #121a2e;
+      --ink-line: rgba(120, 152, 191, .14);
+      --paper: #f6efe0;
+      --paper-deep: #ece1cb;
+      --paper-line: #ddccac;
+      --ink-text: #20283c;
+      --ink-muted: #8a8170;
+      --parchment: #e8e1d2;
+      --parchment-muted: #93a2bd;
+      --rust: #c1652f;
+      --blueprint: #5b80a8;
+      --blueprint-soft: #8aabd0;
+      --sage: #71956b;
+      --brick: #b1503f;
+      --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+      --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+      --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font); background: var(--content-bg); color: var(--text); }
-    .app { display: flex; min-height: 100vh; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--ink);
+      color: var(--parchment);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .app { display: flex; flex: 1; min-height: 0; }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ---- MASTHEAD ---- */
+    .masthead {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 22px 30px 20px; border-bottom: 1px solid var(--ink-line);
+      animation: fadeIn .6s ease both;
+      flex-shrink: 0;
+    }
+    .masthead-title { font-family: var(--font-display); font-size: 24px; font-weight: 500; letter-spacing: .01em; color: var(--parchment); }
+    .masthead-title em { font-style: italic; color: var(--rust); font-weight: 400; }
+    .masthead-meta {
+      display: flex; gap: 22px;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--parchment-muted);
+    }
 
     /* ---- SIDEBAR ---- */
     .sidebar {
-      width: 240px; min-width: 240px;
-      background: var(--sidebar-bg);
-      color: var(--sidebar-text);
-      padding: 16px 12px;
+      width: 320px; min-width: 320px;
+      background: var(--ink);
+      color: var(--parchment);
+      padding: 22px 20px;
       display: flex; flex-direction: column;
-      overflow-y: auto;
+      overflow-y: auto; height: 100%;
     }
-    .sidebar-group { margin-bottom: 18px; }
+    .sidebar-group {
+      margin-bottom: 16px; padding: 18px 18px 20px;
+      background: rgba(232, 225, 210, .045);
+      border: 1px solid rgba(138, 166, 196, .22);
+      border-radius: 5px;
+      box-shadow: 0 4px 16px rgba(5, 9, 18, .25);
+      animation: riseIn .5s cubic-bezier(.19,1,.22,1) both;
+    }
+    .sidebar-group:nth-of-type(1) { animation-delay: .02s; }
+    .sidebar-group:nth-of-type(2) { animation-delay: .07s; }
+    .sidebar-group:nth-of-type(3) { animation-delay: .12s; }
+    .sidebar-group:nth-of-type(4) { animation-delay: .17s; }
+    .sidebar-group:nth-of-type(5) { animation-delay: .22s; }
+    .sidebar-group:nth-of-type(6) { animation-delay: .27s; }
     .sidebar-group-title {
-      font-size: 10px; font-weight: 700;
-      letter-spacing: .1em; color: var(--sidebar-muted);
-      text-transform: uppercase; margin-bottom: 10px;
+      font-family: var(--font-display); font-style: italic; font-weight: 500;
+      font-size: 16px; letter-spacing: .01em; color: var(--parchment);
+      text-transform: none; margin-bottom: 16px;
+      display: flex; align-items: baseline; gap: 11px;
+      padding-bottom: 12px; border-bottom: 1px solid rgba(138, 166, 196, .2);
     }
-    .sidebar-field { margin-bottom: 8px; }
-    .sidebar-field label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 3px; }
+    .sidebar-group-title::before {
+      content: attr(data-index);
+      font-family: var(--font-mono); font-style: normal; font-size: 11px;
+      letter-spacing: .16em; color: var(--rust);
+    }
+    .sidebar-field { margin-bottom: 15px; }
+    .sidebar-field label {
+      display: block; font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--parchment-muted); margin-bottom: 7px;
+    }
     .sidebar-field input,
     .sidebar-field select {
       width: 100%;
-      background: var(--sidebar-input-bg);
-      border: 1px solid #475569; border-radius: 5px;
-      color: var(--sidebar-text); font-size: 12px;
-      padding: 5px 8px; outline: none;
-      transition: border-color .15s;
+      background: rgba(8, 13, 26, .4);
+      border: 1px solid rgba(138, 166, 196, .3); border-bottom: 2px solid rgba(138, 166, 196, .3);
+      border-radius: 3px;
+      color: var(--parchment); font-family: var(--font-mono); font-size: 15px;
+      padding: 9px 10px; outline: none;
+      transition: border-color .2s ease, background .2s ease;
     }
     .sidebar-field input:focus,
-    .sidebar-field select:focus { border-color: var(--blue); }
-    .sidebar-field select option { background: var(--sidebar-bg); }
-    .sidebar-footer { margin-top: auto; padding-top: 16px; }
-    .btn-scenario {
-      width: 100%; background: var(--blue); color: white;
-      border: none; border-radius: 6px; padding: 8px;
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      transition: background .15s;
+    .sidebar-field select:focus { border-color: var(--rust); border-bottom-color: var(--rust); background: rgba(193,101,47,.1); }
+    .sidebar-field select option { background: var(--ink); color: var(--parchment); }
+    .sidebar-footer {
+      position: sticky; bottom: -22px; z-index: 5;
+      margin: 8px -20px -22px; padding: 14px 20px 22px;
+      background: var(--ink); border-top: 1px solid var(--ink-line);
+      display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
     }
-    .btn-scenario:hover { background: #1d4ed8; }
-    .btn-danger { background: #dc2626; }
-    .btn-danger:hover { background: #b91c1c; }
+
+    /* ---- SEGMENTED TYPE CONTROL ---- */
+    .type-segment { display: flex; gap: 7px; margin-bottom: 16px; }
+    .type-seg-btn {
+      flex: 1; background: rgba(8, 13, 26, .35);
+      border: 1px solid rgba(138, 166, 196, .3); border-radius: 3px;
+      color: var(--parchment-muted);
+      font-family: var(--font-display); font-style: italic; font-size: 13px;
+      padding: 10px 4px; cursor: pointer; transition: all .2s ease;
+    }
+    .type-seg-btn:hover { border-color: var(--blueprint-soft); color: var(--parchment); }
+    .type-seg-btn.active {
+      background: var(--rust); border-color: var(--rust);
+      color: var(--paper); font-style: normal; font-weight: 600;
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn-scenario, .btn-projets {
+      width: 100%; background: transparent;
+      border: 1px solid var(--blueprint-soft); border-radius: 2px;
+      color: var(--parchment); font-family: var(--font-display); font-style: italic;
+      font-size: 13px; padding: 10px; cursor: pointer; transition: all .2s ease;
+    }
+    .btn-scenario:hover, .btn-projets:hover { background: var(--blueprint-soft); color: var(--ink); font-style: normal; }
+    .btn-danger { border-color: var(--brick); color: var(--brick); }
+    .btn-danger:hover { background: var(--brick); color: var(--paper); }
 
     /* ---- MAIN CONTENT ---- */
     .content {
-      flex: 1; padding: 16px;
-      display: flex; flex-direction: column; gap: 12px;
-      overflow-x: hidden;
+      flex: 1; padding: 28px;
+      display: flex; flex-direction: column; gap: 18px;
+      overflow-y: auto; overflow-x: hidden; height: 100%;
     }
 
     /* ---- KPIs ---- */
-    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
     .kpi-card {
-      background: var(--card-bg); border-radius: 10px;
-      padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      background: var(--paper); border-radius: 4px;
+      border-top: 3px solid var(--blueprint);
+      padding: 19px 20px 17px;
+      box-shadow: 0 10px 30px rgba(10,17,32,.35);
+      transition: transform .2s ease, box-shadow .2s ease;
     }
-    .kpi-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .kpi-value { font-size: clamp(15px, 2vw, 20px); font-weight: 700; color: var(--text); margin: 4px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .kpi-value--green { color: var(--green); }
-    .kpi-value--red { color: var(--red); }
-    .kpi-sub { font-size: 11px; color: var(--text-muted); }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 16px 38px rgba(10,17,32,.42); }
+    .kpi-card--accent { border-top-color: var(--rust); }
+    .kpi-label {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .kpi-value {
+      font-family: var(--font-display); font-weight: 600;
+      font-size: clamp(20px, 2.4vw, 27px); color: var(--ink-text);
+      margin: 7px 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .kpi-value--mono { font-family: var(--font-mono); font-weight: 600; }
+    .kpi-value--green { color: var(--sage); }
+    .kpi-value--red { color: var(--brick); }
+    .kpi-sub { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); }
 
     /* ---- CARDS & CHARTS ---- */
     .card {
-      background: var(--card-bg); border-radius: 10px;
-      padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      background: var(--paper); border-radius: 4px;
+      padding: 20px 22px; box-shadow: 0 10px 30px rgba(10,17,32,.3);
     }
     .card-header {
       display: flex; align-items: center;
-      justify-content: space-between; margin-bottom: 12px;
+      justify-content: space-between; margin-bottom: 15px;
     }
-    .card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-    .charts-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 12px; }
+    .card-title { font-family: var(--font-display); font-style: italic; font-size: 16px; font-weight: 500; color: var(--ink-text); }
+    .charts-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 14px; }
     .charts-row > * { min-width: 0; }
     .chart-card canvas { width: 100% !important; max-height: 220px; }
 
     /* ---- TOGGLE BUTTONS ---- */
-    .toggle-group { display: flex; gap: 4px; }
+    .toggle-group { display: flex; gap: 5px; }
     .toggle-btn {
-      font-size: 11px; padding: 3px 10px;
-      border: 1px solid var(--border); border-radius: 5px;
-      background: transparent; color: var(--text-muted);
-      cursor: pointer; transition: all .15s;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+      padding: 5px 12px; border: 1px solid var(--paper-line); border-radius: 2px;
+      background: transparent; color: var(--ink-muted);
+      cursor: pointer; transition: all .15s ease;
     }
-    .toggle-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+    .toggle-btn.active { background: var(--ink-text); border-color: var(--ink-text); color: var(--paper); }
 
     /* ---- TABLEAU ---- */
-    .tableau-wrapper { overflow-x: auto; max-height: 320px; overflow-y: auto; }
-    .tableau-wrapper table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tableau-wrapper { overflow-x: auto; max-height: 360px; overflow-y: auto; }
+    .tableau-wrapper table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
     .tableau-wrapper th {
       position: sticky; top: 0;
-      background: #f1f5f9; padding: 6px 8px;
-      text-align: right; color: var(--text-muted);
-      font-weight: 600; font-size: 10px;
-      text-transform: uppercase; letter-spacing: .04em;
+      background: var(--paper-deep); padding: 9px 11px;
+      text-align: right; color: var(--ink-muted);
+      font-weight: 500; font-size: 11px;
+      text-transform: uppercase; letter-spacing: .08em;
     }
     .tableau-wrapper th:first-child { text-align: left; }
-    .tableau-wrapper td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f1f5f9; }
+    .tableau-wrapper td { padding: 6px 11px; text-align: right; border-bottom: 1px solid var(--paper-line); color: var(--ink-text); }
     .tableau-wrapper td:first-child { text-align: left; }
-    .tableau-wrapper tr:nth-child(even) td { background: #fafafa; }
-    .col-capital { color: var(--blue); }
-    .col-interets { color: var(--red); }
-    .col-assurance { color: var(--amber); }
-    .col-valeur { color: var(--green); }
+    .tableau-wrapper tr.recap-total td { border-top: 2px solid var(--rust); background: rgba(193,101,47,.1) !important; color: var(--rust); }
+    .tableau-wrapper tr:nth-child(even) td { background: rgba(236,225,203,.45); }
+    .col-capital { color: var(--blueprint); }
+    .col-interets { color: var(--brick); }
+    .col-assurance { color: var(--rust); }
+    .col-valeur { color: var(--sage); }
 
     /* ---- COMPARAISON ---- */
-    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; grid-column: 1 / -1; }
-    .scenario-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-    .scenario-a-label { color: var(--blue); }
-    .scenario-b-label { color: var(--amber); }
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; grid-column: 1 / -1; }
+    .recap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .scenario-label {
+      font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
+      letter-spacing: .02em; margin-bottom: 9px;
+    }
+    .scenario-a-label { color: var(--blueprint-soft); }
+    .scenario-b-label { color: var(--rust); }
 
     /* ---- RESPONSIVE ---- */
-    @media (max-width: 900px) {
-      .app { flex-direction: column; }
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app { flex-direction: column; height: auto; }
+      .sidebar, .content { height: auto; overflow-y: visible; }
       .sidebar { width: 100%; min-width: 0; }
-      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .sidebar-footer { position: static; margin: 16px 0 0; padding: 14px 0 0; }
       .charts-row { grid-template-columns: 1fr; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .recap-row { grid-template-columns: 1fr; }
     }
 
 /* ---- BADGE INDICATEUR DE PLAGE ---- */
 .badge {
-  font-size: 9px; color: var(--sidebar-muted);
-  margin-left: 4px; font-weight: 500;
+  font-family: var(--font-mono); font-size: 11px; color: var(--parchment-muted);
+  margin-left: 4px; font-weight: 400; letter-spacing: .03em;
 }
 
 /* ---- CAPITAL DISPLAY ---- */
 .capital-display {
-  background: #0f172a; border-radius: 6px;
-  padding: 8px 10px; margin-top: 4px;
+  background: rgba(193,101,47,.08); border: 1px solid rgba(193,101,47,.28);
+  border-radius: 2px; padding: 12px 14px; margin-top: 6px;
 }
-.capital-label { font-size: 10px; color: var(--sidebar-muted); text-transform: uppercase; letter-spacing: .06em; display: block; }
-.capital-value { font-size: 16px; font-weight: 700; color: #e2e8f0; display: block; margin: 2px 0; }
-.capital-sub { font-size: 10px; color: var(--sidebar-muted); }
+.capital-label { font-family: var(--font-mono); font-size: 11px; color: var(--parchment-muted); text-transform: uppercase; letter-spacing: .1em; display: block; }
+.capital-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--rust); display: block; margin: 5px 0; }
+.capital-sub { font-family: var(--font-mono); font-size: 12px; color: var(--parchment-muted); }
 
 /* ---- PTZ LABEL FIXE ---- */
 .ptz-fixed-label {
-  font-size: 12px; color: var(--sidebar-muted);
-  padding: 5px 8px;
-  display: block;
+  font-family: var(--font-mono); font-size: 13px; color: var(--parchment-muted);
+  padding: 5px 8px; display: block;
 }
 
 /* ---- BOUTON PROJETS ---- */
-.btn-projets {
-  width: 100%; background: #334155; color: var(--sidebar-text);
-  border: 1px solid #475569; border-radius: 6px; padding: 7px;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  margin-bottom: 8px; transition: background .15s;
-}
-.btn-projets:hover { background: #475569; }
+.btn-projets { margin-bottom: 8px; }
 
 /* ---- PANNEAU PROJETS ---- */
 .projets-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  position: fixed; inset: 0; background: rgba(10,17,32,.6);
   z-index: 100; display: none; justify-content: flex-end;
+  backdrop-filter: blur(2px);
 }
 .projets-overlay.open { display: flex; }
 .projets-panel {
-  width: 380px; max-width: 100vw;
-  background: #1e293b; color: var(--sidebar-text);
+  width: 400px; max-width: 100vw;
+  background: var(--ink); color: var(--parchment);
   display: flex; flex-direction: column;
   height: 100vh; overflow: hidden;
+  border-left: 1px solid var(--ink-line);
+  animation: slideInPanel .3s cubic-bezier(.19,1,.22,1) both;
 }
+@keyframes slideInPanel { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .projets-panel-header {
-  padding: 16px; border-bottom: 1px solid #334155;
+  padding: 20px; border-bottom: 1px solid var(--ink-line);
   display: flex; justify-content: space-between; align-items: center;
 }
-.projets-panel-header h2 { font-size: 14px; font-weight: 700; }
+.projets-panel-header h2 { font-family: var(--font-display); font-style: italic; font-size: 18px; font-weight: 500; }
 .projets-panel-close {
-  background: none; border: none; color: var(--sidebar-muted);
-  font-size: 18px; cursor: pointer; padding: 4px;
+  background: none; border: none; color: var(--parchment-muted);
+  font-size: 20px; cursor: pointer; padding: 4px; transition: color .15s;
 }
-.projets-panel-save { padding: 14px; border-bottom: 1px solid #334155; }
-.projets-panel-list { flex: 1; overflow-y: auto; padding: 10px; }
+.projets-panel-close:hover { color: var(--rust); }
+.projets-panel-save { padding: 16px 20px; border-bottom: 1px solid var(--ink-line); }
+.projets-panel-list { flex: 1; overflow-y: auto; padding: 14px; }
 .projets-panel-footer {
-  padding: 12px; border-top: 1px solid #334155;
+  padding: 14px 20px; border-top: 1px solid var(--ink-line);
   display: flex; gap: 8px;
 }
 .projets-panel-footer button {
-  flex: 1; background: #334155; color: var(--sidebar-text);
-  border: 1px solid #475569; border-radius: 5px;
-  padding: 6px; font-size: 11px; cursor: pointer;
+  flex: 1; background: transparent; color: var(--parchment);
+  border: 1px solid var(--ink-line); border-radius: 2px;
+  padding: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; transition: all .15s ease;
 }
-.projets-panel-footer button:hover { background: #475569; }
+.projets-panel-footer button:hover { border-color: var(--blueprint-soft); color: var(--blueprint-soft); }
 .projet-card {
-  background: #0f172a; border-radius: 8px; padding: 10px;
-  margin-bottom: 8px;
+  background: var(--paper); color: var(--ink-text);
+  border-radius: 4px; padding: 15px;
+  margin-bottom: 10px; box-shadow: 0 6px 18px rgba(10,17,32,.25);
 }
-.projet-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-.projet-card-name { font-size: 13px; font-weight: 600; }
-.projet-card-type { font-size: 10px; color: var(--sidebar-muted); text-transform: uppercase; }
-.projet-card-kpi { font-size: 11px; color: var(--sidebar-muted); margin-bottom: 6px; }
+.projet-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.projet-card-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+.projet-card-type { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .08em; }
+.projet-card-kpi { font-family: var(--font-mono); font-size: 13px; color: var(--ink-muted); margin-bottom: 9px; }
 .projet-card-actions { display: flex; gap: 6px; }
 .projet-card-actions button {
-  flex: 1; background: #1e293b; color: var(--sidebar-text);
-  border: 1px solid #334155; border-radius: 4px;
-  padding: 4px 6px; font-size: 10px; cursor: pointer;
+  flex: 1; background: transparent; color: var(--ink-text);
+  border: 1px solid var(--paper-line); border-radius: 2px;
+  padding: 6px 7px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all .15s ease;
 }
-.projet-card-actions button:hover { background: #334155; }
-.projet-card-url { font-size: 10px; color: #60a5fa; word-break: break-all; margin-top: 3px; }
-.projet-card-url a { color: #60a5fa; text-decoration: none; }
+.projet-card-actions button:hover { border-color: var(--blueprint); color: var(--blueprint); }
+.projet-card-url { font-family: var(--font-mono); font-size: 12px; color: var(--blueprint); word-break: break-all; margin-top: 4px; }
+.projet-card-url a { color: var(--blueprint); text-decoration: none; }
 .projet-card-url a:hover { text-decoration: underline; }
 
 /* ---- TOAST ---- */
 .toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #10b981; color: white; padding: 8px 20px;
-  border-radius: 8px; font-size: 13px; font-weight: 600;
-  z-index: 200; opacity: 0; transition: opacity .3s; pointer-events: none;
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: var(--rust); color: var(--paper); padding: 11px 24px;
+  border-radius: 2px; font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
+  z-index: 200; opacity: 0; transition: opacity .3s ease; pointer-events: none;
+  box-shadow: 0 12px 30px rgba(10,17,32,.4);
 }
 .toast.show { opacity: 1; }
 
 /* ---- SECTION EMPRUNTS ---- */
 .tranche-card {
-  background: #0f172a; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px;
+  background: rgba(18,26,46,.4); border: 1px solid var(--ink-line);
+  border-radius: 2px; padding: 12px 14px; margin-bottom: 10px;
 }
-.tranche-header {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
-}
-.tranche-label-text { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.tranche-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+.tranche-label-text { font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500; color: var(--parchment); }
 .tranche-badge {
-  font-size: 9px; color: #64748b; background: #1e293b;
-  border-radius: 3px; padding: 1px 5px; margin-left: 5px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--blueprint-soft);
+  background: rgba(91,128,168,.16); border-radius: 2px; padding: 2px 7px; margin-left: 6px; letter-spacing: .03em;
 }
 .tranche-del {
-  background: none; border: none; color: #475569; cursor: pointer; font-size: 16px; padding: 0 2px; line-height: 1;
+  background: none; border: none; color: var(--parchment-muted);
+  cursor: pointer; font-size: 18px; padding: 0 2px; line-height: 1; transition: color .15s;
 }
-.tranche-del:hover { color: #f87171; }
-.tranche-montant-calc { font-size: 13px; font-weight: 700; color: #60a5fa; margin-top: 4px; }
-.tranche-info { font-size: 10px; color: #64748b; margin-top: 3px; }
+.tranche-del:hover { color: var(--brick); }
+.tranche-montant-calc { font-family: var(--font-mono); font-size: 16px; font-weight: 600; color: var(--rust); margin-top: 7px; }
+.tranche-info { font-family: var(--font-mono); font-size: 12px; color: var(--parchment-muted); margin-top: 6px; }
 .btn-add-tranche {
-  width: 100%; background: transparent; color: #475569;
-  border: 1px dashed #334155; border-radius: 5px; padding: 5px;
-  font-size: 11px; cursor: pointer; margin-top: 4px; transition: color .15s, border-color .15s;
+  width: 100%; background: transparent; color: var(--parchment-muted);
+  border: 1px dashed var(--ink-line); border-radius: 2px; padding: 9px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+  cursor: pointer; margin-top: 6px; transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
-.btn-add-tranche:hover { color: #60a5fa; border-color: #60a5fa; }
+.btn-add-tranche:hover { color: var(--rust); border-color: var(--rust); background: rgba(193,101,47,.06); }
   </style>
 </head>
 <body>
+  <header class="masthead">
+    <div class="masthead-title">Simulateur <em>Crédit Immobilier</em></div>
+    <div class="masthead-meta">
+      <span>Réf. Sim—01</span>
+      <span>Échelle 1:1</span>
+      <span id="masthead-date"></span>
+    </div>
+  </header>
   <div class="app">
 
     <!-- ===== SIDEBAR A ===== -->
@@ -268,16 +382,19 @@
 
       <!-- PROJET -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Type de projet</div>
-        <div class="sidebar-field">
-          <select id="a-type-projet" onchange="onTypeChange('a')">
-            <option value="ancien">Ancien</option>
-            <option value="neuf">Neuf</option>
-            <option value="vefa">VEFA</option>
-          </select>
+        <div class="sidebar-group-title" data-index="01">Type de projet</div>
+        <div class="type-segment" id="a-type-segment">
+          <button type="button" class="type-seg-btn" data-type="ancien" onclick="selectTypeProjet('a','ancien')">Ancien</button>
+          <button type="button" class="type-seg-btn" data-type="neuf" onclick="selectTypeProjet('a','neuf')">Neuf</button>
+          <button type="button" class="type-seg-btn" data-type="vefa" onclick="selectTypeProjet('a','vefa')">VEFA</button>
         </div>
+        <select id="a-type-projet" style="display:none">
+          <option value="ancien">Ancien</option>
+          <option value="neuf">Neuf</option>
+          <option value="vefa">VEFA</option>
+        </select>
         <div class="sidebar-field">
-          <label>Prix du projet (€)</label>
+          <label>Prix du bien (€)</label>
           <input type="number" id="a-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
         </div>
         <div class="sidebar-field">
@@ -289,7 +406,7 @@
 
       <!-- EMPRUNTS -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Emprunts</div>
+        <div class="sidebar-group-title" data-index="02">Emprunts</div>
         <div class="sidebar-field">
           <label>Taux assurance annuel (%)</label>
           <input type="number" id="a-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
@@ -300,7 +417,7 @@
 
       <!-- FRAIS -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Frais</div>
+        <div class="sidebar-group-title" data-index="03">Frais</div>
         <div class="sidebar-field">
           <label>Frais de notaire (%) <span class="badge" id="a-notaire-badge">[7–8,5 %]</span></label>
           <input type="number" id="a-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
@@ -317,7 +434,7 @@
 
       <!-- TRAVAUX -->
       <div class="sidebar-group" id="a-travaux-section">
-        <div class="sidebar-group-title">Travaux</div>
+        <div class="sidebar-group-title" data-index="04">Travaux</div>
         <div class="sidebar-field">
           <label>Surface (m²)</label>
           <input type="number" id="a-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('a','m2')">
@@ -334,7 +451,7 @@
 
       <!-- DIFFÉRÉ -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Différé</div>
+        <div class="sidebar-group-title" data-index="05">Différé</div>
         <div class="sidebar-field">
           <label>Durée du différé (mois)</label>
           <input type="number" id="a-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
@@ -350,7 +467,7 @@
 
       <!-- VALORISATION -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Valorisation du bien</div>
+        <div class="sidebar-group-title" data-index="06">Valorisation du bien</div>
         <div class="sidebar-field">
           <label>Appréciation annuelle (%)</label>
           <input type="number" id="a-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
@@ -358,7 +475,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <button class="btn-projets" onclick="openProjetsPanel()">💾 Projets sauvegardés</button>
+        <button class="btn-projets" onclick="openProjetsPanel()">Projets sauvegardés</button>
         <button class="btn-scenario" onclick="toggleScenarioB()">+ Ajouter scénario B</button>
       </div>
     </aside>
@@ -368,16 +485,19 @@
 
       <!-- PROJET B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Type de projet — B</div>
-        <div class="sidebar-field">
-          <select id="b-type-projet" onchange="onTypeChange('b')">
-            <option value="ancien">Ancien</option>
-            <option value="neuf">Neuf</option>
-            <option value="vefa">VEFA</option>
-          </select>
+        <div class="sidebar-group-title" data-index="01">Type de projet — B</div>
+        <div class="type-segment" id="b-type-segment">
+          <button type="button" class="type-seg-btn" data-type="ancien" onclick="selectTypeProjet('b','ancien')">Ancien</button>
+          <button type="button" class="type-seg-btn" data-type="neuf" onclick="selectTypeProjet('b','neuf')">Neuf</button>
+          <button type="button" class="type-seg-btn" data-type="vefa" onclick="selectTypeProjet('b','vefa')">VEFA</button>
         </div>
+        <select id="b-type-projet" style="display:none">
+          <option value="ancien">Ancien</option>
+          <option value="neuf">Neuf</option>
+          <option value="vefa">VEFA</option>
+        </select>
         <div class="sidebar-field">
-          <label>Prix du projet (€)</label>
+          <label>Prix du bien (€)</label>
           <input type="number" id="b-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
         </div>
         <div class="sidebar-field">
@@ -389,7 +509,7 @@
 
       <!-- EMPRUNTS B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Emprunts — B</div>
+        <div class="sidebar-group-title" data-index="02">Emprunts — B</div>
         <div class="sidebar-field">
           <label>Taux assurance annuel (%)</label>
           <input type="number" id="b-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
@@ -400,7 +520,7 @@
 
       <!-- FRAIS B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Frais — B</div>
+        <div class="sidebar-group-title" data-index="03">Frais — B</div>
         <div class="sidebar-field">
           <label>Frais de notaire (%) <span class="badge" id="b-notaire-badge">[7–8,5 %]</span></label>
           <input type="number" id="b-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
@@ -417,7 +537,7 @@
 
       <!-- TRAVAUX B -->
       <div class="sidebar-group" id="b-travaux-section">
-        <div class="sidebar-group-title">Travaux — B</div>
+        <div class="sidebar-group-title" data-index="04">Travaux — B</div>
         <div class="sidebar-field">
           <label>Surface (m²)</label>
           <input type="number" id="b-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('b','m2')">
@@ -434,7 +554,7 @@
 
       <!-- DIFFÉRÉ B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Différé — B</div>
+        <div class="sidebar-group-title" data-index="05">Différé — B</div>
         <div class="sidebar-field">
           <label>Durée du différé (mois)</label>
           <input type="number" id="b-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
@@ -450,7 +570,7 @@
 
       <!-- VALORISATION B -->
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Valorisation — B</div>
+        <div class="sidebar-group-title" data-index="06">Valorisation — B</div>
         <div class="sidebar-field">
           <label>Appréciation annuelle (%)</label>
           <input type="number" id="b-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
@@ -469,7 +589,11 @@
       <div class="charts-row">
         <div class="card chart-card chart-card--wide" id="card-principal">
           <div class="card-header">
-            <span class="card-title" id="title-principal">Capital restant dû vs Valeur du bien</span>
+            <span class="card-title" id="title-principal">Gain net potentiel à la revente (hors apport)</span>
+            <span class="toggle-group">
+              <button id="btn-principal-gain" class="toggle-btn active" onclick="toggleGraphiquePrincipalMode('gain')">Gain net (hors apport)</button>
+              <button id="btn-principal-capital" class="toggle-btn" onclick="toggleGraphiquePrincipalMode('capital')">Capital vs Valeur</button>
+            </span>
           </div>
           <canvas id="chart-principal"></canvas>
         </div>
@@ -486,6 +610,21 @@
         <div class="card chart-card chart-card--small">
           <div class="card-header"><span class="card-title">Répartition coût</span></div>
           <canvas id="chart-donut"></canvas>
+        </div>
+      </div>
+
+      <div class="recap-row">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Récapitulatif des frais (% du prix du bien)</span>
+          </div>
+          <div id="recap-frais" class="tableau-wrapper"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Plan de financement</span>
+          </div>
+          <div id="recap-financement" class="tableau-wrapper"></div>
         </div>
       </div>
 
@@ -506,27 +645,27 @@
   <div class="projets-overlay" id="projets-overlay" onclick="closeProjetsPanel(event)">
     <div class="projets-panel" onclick="event.stopPropagation()">
       <div class="projets-panel-header">
-        <h2>💾 Mes projets</h2>
+        <h2>Mes projets</h2>
         <button class="projets-panel-close" onclick="closeProjetsPanel()">✕</button>
       </div>
       <div class="projets-panel-save">
         <div class="sidebar-field">
-          <label style="color:#94a3b8;font-size:11px">Nom du projet</label>
-          <input type="text" id="projet-nom" placeholder="ex: Appart Lyon 2ème" style="background:#334155;border:1px solid #475569;border-radius:5px;color:#e2e8f0;font-size:12px;padding:5px 8px;width:100%;outline:none;">
+          <label>Nom du projet</label>
+          <input type="text" id="projet-nom" placeholder="ex : Appart Lyon 2ème">
         </div>
         <div class="sidebar-field" style="margin-top:6px">
-          <label style="color:#94a3b8;font-size:11px">URL de l'annonce</label>
-          <input type="url" id="projet-url" placeholder="https://..." style="background:#334155;border:1px solid #475569;border-radius:5px;color:#e2e8f0;font-size:12px;padding:5px 8px;width:100%;outline:none;">
+          <label>URL de l'annonce</label>
+          <input type="url" id="projet-url" placeholder="https://...">
         </div>
-        <button onclick="sauvegarderProjet()" style="margin-top:8px;width:100%;background:#2563eb;color:white;border:none;border-radius:5px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;">Sauvegarder le projet actuel</button>
+        <button class="btn-scenario" onclick="sauvegarderProjet()" style="margin-top:8px">Sauvegarder le projet actuel</button>
       </div>
       <div class="projets-panel-list" id="projets-list">
         <!-- Rendu dynamique par renderProjetsList() -->
       </div>
       <div class="projets-panel-footer">
-        <button onclick="exporterProjets()">⬇ Exporter JSON</button>
-        <label style="flex:1;text-align:center;cursor:pointer;">
-          ⬆ Importer JSON
+        <button onclick="exporterProjets()">Exporter JSON</button>
+        <label style="flex:1;text-align:center;cursor:pointer;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--parchment);border:1px solid var(--ink-line);border-radius:2px;padding:8px;transition:all .15s ease;">
+          Importer JSON
           <input type="file" accept=".json" onchange="importerProjets(event)" style="display:none">
         </label>
       </div>
@@ -685,8 +824,10 @@
     const valeurBienTerme = p.valeurBien * Math.pow(1 + p.tauxApprec / 100, p.duree);
     const plusValueNette = valeurBienTerme - coutTotalOperation;
 
-    const capitalNetTAEG = p.capital - p.fraisDossier - p.fraisGarantie;
-    const taeg = calcTAEG(Math.max(capitalNetTAEG, 1), rows);
+    // Les frais (notaire, dossier, garantie) sont financés dans le capital emprunté
+    // et déjà amortis via les mensualités : la base actuarielle du TAEG est donc
+    // le capital total débloqué, sans nouvelle déduction (sinon double comptage).
+    const taeg = calcTAEG(Math.max(totalBorrowed, 1), rows);
 
     // Données graphique principal (mensuel)
     const capitalRestantParMois = rows.map(r => Math.round(r.capitalRestant));
@@ -697,6 +838,24 @@
     let moisCroisement = null;
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].valeurBien >= rows[i].capitalRestant) { moisCroisement = i + 1; break; }
+    }
+
+    // Gain net potentiel à la revente : ce qu'on récupère (valeur − dette restante)
+    // moins ce qu'on a investi (apport + mensualités cumulées). L'apport est compté
+    // des deux côtés — il a réduit le capital emprunté (donc augmente l'équité d'autant)
+    // et il sort de la poche au départ — si bien qu'il s'annule mathématiquement :
+    //   gain(m) = (valeurBien(m) − prixProjet) − fraisAcquisition − intérêts(m) − assurance(m)
+    // i.e. la prise de valeur du bien doit compenser tous les coûts du financement.
+    // L'omettre d'un seul côté (comme dans une version précédente) faisait apparaître
+    // l'apport comme un profit immédiat — d'où un seuil de rentabilité toujours au mois 1.
+    let cumulMensualites = 0;
+    const gainNetReventeParMois = [];
+    let moisRentabilite = null;
+    for (let i = 0; i < rows.length; i++) {
+      cumulMensualites += rows[i].mensualite;
+      const gain = rows[i].valeurBien - rows[i].capitalRestant - p.apport - cumulMensualites;
+      gainNetReventeParMois.push(Math.round(gain));
+      if (moisRentabilite === null && gain >= 0) moisRentabilite = i + 1;
     }
 
     // Données graphique secondaire (annuel)
@@ -736,6 +895,8 @@
       capitalRestantParMois,
       valeurBienParMois,
       moisCroisement,
+      gainNetReventeParMois,
+      moisRentabilite,
       labelsAns,
       capitalParAn,
       interetsParAn,
@@ -754,6 +915,7 @@
   let chartSecondaire = null;
   let chartDonut = null;
   let modeGraphique = 'A';
+  let modeChartPrincipal = 'gain';
   let modeTableau = 'mois';
   let scenarioBActif = false;
   let tranchesA = [];
@@ -844,7 +1006,7 @@
       } else {
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <input type="text" value="${t.label}" style="background:transparent;border:none;color:#e2e8f0;font-size:11px;font-weight:700;width:calc(100% - 24px);outline:none"
+            <input type="text" value="${t.label}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0"
               oninput="onTrancheChange('${prefix}','${t.id}','label',this.value)">
             ${delBtn}
           </div>
@@ -943,9 +1105,22 @@
     ancien: { notaire: 7.5, notaireMin: 7,   notaireMax: 8.5, notaireBadge: '[7–8,5 %]', ptz: 0,     travaux: true  }
   };
 
+  function selectTypeProjet(prefix, type) {
+    const sel = document.getElementById(`${prefix}-type-projet`);
+    if (sel) sel.value = type;
+    onTypeChange(prefix);
+  }
+
+  function syncTypeSegment(prefix, type) {
+    const seg = document.getElementById(`${prefix}-type-segment`);
+    if (!seg) return;
+    seg.querySelectorAll('.type-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  }
+
   function onTypeChange(prefix) {
     const type = document.getElementById(`${prefix}-type-projet`)?.value || 'ancien';
     const p = PRESETS[type] || PRESETS.ancien;
+    syncTypeSegment(prefix, type);
 
     // Frais de notaire : min/max/valeur + badge
     const notaireEl = document.getElementById(`${prefix}-notaire`);
@@ -1074,10 +1249,15 @@
         <div class="kpi-label">Mensualité${res.mensualitePhase2 ? ' (an 1–10)' : ''}</div>
         <div class="kpi-value">${fmt(res.mensualite)}</div>
         ${res.mensualitePhase2
-          ? `<div class="kpi-sub" style="color:var(--green);font-weight:600">↓ ${fmt(res.mensualitePhase2)} dès an 11</div>
+          ? `<div class="kpi-sub" style="color:var(--sage);font-weight:600">↓ ${fmt(res.mensualitePhase2)} dès an 11</div>
              <div class="kpi-sub">économie : ${fmt(res.mensualite - res.mensualitePhase2)}/mois</div>`
           : `<div class="kpi-sub">dont assurance : ${fmt(res.mensualiteAssurance)}</div>`
         }
+      </div>
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-label">TAEG global</div>
+        <div class="kpi-value kpi-value--mono">${fmtPct(res.taeg)}</div>
+        <div class="kpi-sub">toutes lignes de prêt + assurance</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Coût crédit</div>
@@ -1129,6 +1309,8 @@
       renderGraphiquePrincipal(resA, resB);
       renderGraphiqueSecondaire(resA);
       renderDonut(resA);
+      renderRecapFrais(pA);
+      renderRecapFinancement(pA, resA);
       renderTableau(resA.amortissement, pA.duree);
     } else {
       updateCapitalDisplay('a', pA);
@@ -1137,46 +1319,90 @@
       renderGraphiquePrincipal(resA, null);
       renderGraphiqueSecondaire(resA);
       renderDonut(resA);
+      renderRecapFrais(pA);
+      renderRecapFinancement(pA, resA);
       renderTableau(resA.amortissement, pA.duree);
     }
   }
 
-  // Stubs — replaced in Tasks 7–11
   function renderGraphiquePrincipal(res, resB) {
     const ctx = document.getElementById('chart-principal').getContext('2d');
 
-    const datasets = [
-      {
-        label: 'Capital restant dû' + (resB ? ' — A' : ''),
-        data: res.capitalRestantParMois,
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37,99,235,0.07)',
-        fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
-      },
-      {
-        label: 'Valeur du bien' + (resB ? ' — A' : ''),
-        data: res.valeurBienParMois,
-        borderColor: '#10b981',
-        borderDash: [6, 3],
-        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-      }
-    ];
+    let titleBase, cross = '', datasets;
 
-    if (resB) {
-      datasets.push({
-        label: 'Capital restant dû — B',
-        data: resB.capitalRestantParMois,
-        borderColor: '#f59e0b',
-        borderDash: [4, 2],
-        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-      });
-      datasets.push({
-        label: 'Valeur du bien — B',
-        data: resB.valeurBienParMois,
-        borderColor: '#6366f1',
-        borderDash: [6, 3],
-        fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
-      });
+    if (modeChartPrincipal === 'gain') {
+      titleBase = 'Gain net potentiel à la revente (hors apport)';
+      datasets = [
+        {
+          label: 'Gain net' + (resB ? ' — A' : ''),
+          data: res.gainNetReventeParMois,
+          borderColor: '#5b80a8',
+          backgroundColor: 'rgba(91,128,168,0.14)',
+          fill: 'origin', tension: 0.3, borderWidth: 2, pointRadius: 0
+        },
+        {
+          label: 'Seuil de rentabilité (0 €)',
+          data: res.gainNetReventeParMois.map(() => 0),
+          borderColor: 'rgba(193,101,47,.6)',
+          borderDash: [4, 4],
+          fill: false, tension: 0, borderWidth: 1.5, pointRadius: 0
+        }
+      ];
+      if (resB) {
+        datasets.push({
+          label: 'Gain net — B',
+          data: resB.gainNetReventeParMois,
+          borderColor: '#c1652f',
+          borderDash: [4, 2],
+          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+        });
+      }
+      if (res.moisRentabilite === 1) {
+        cross = ' — ✓ Rentable dès le 1ᵉʳ mois';
+      } else if (res.moisRentabilite) {
+        cross = ` — Rentable à partir de l'an ${Math.ceil(res.moisRentabilite / 12)} (mois ${res.moisRentabilite})`;
+      } else {
+        cross = ' — Pas encore rentable sur la durée du prêt';
+      }
+    } else {
+      titleBase = 'Capital restant dû vs Valeur du bien';
+      datasets = [
+        {
+          label: 'Capital restant dû' + (resB ? ' — A' : ''),
+          data: res.capitalRestantParMois,
+          borderColor: '#5b80a8',
+          backgroundColor: 'rgba(91,128,168,0.10)',
+          fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
+        },
+        {
+          label: 'Valeur du bien' + (resB ? ' — A' : ''),
+          data: res.valeurBienParMois,
+          borderColor: '#71956b',
+          borderDash: [6, 3],
+          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+        }
+      ];
+      if (resB) {
+        datasets.push({
+          label: 'Capital restant dû — B',
+          data: resB.capitalRestantParMois,
+          borderColor: '#c1652f',
+          borderDash: [4, 2],
+          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+        });
+        datasets.push({
+          label: 'Valeur du bien — B',
+          data: resB.valeurBienParMois,
+          borderColor: '#9b6fa3',
+          borderDash: [6, 3],
+          fill: false, tension: 0.3, borderWidth: 2, pointRadius: 0
+        });
+      }
+      if (res.moisCroisement === 1) {
+        cross = ' — ✓ Bien déjà supérieur à la dette';
+      } else if (res.moisCroisement) {
+        cross = ` — Croisement : An ${Math.ceil(res.moisCroisement / 12)}, mois ${res.moisCroisement}`;
+      }
     }
 
     const data = { labels: res.labelsParMois, datasets };
@@ -1210,17 +1436,16 @@
       chartPrincipal.update();
     }
 
-    // Annotation croisement dans le titre
     const titleEl = document.getElementById('title-principal');
-    if (titleEl) {
-      let cross = '';
-      if (res.moisCroisement === 1) {
-        cross = ' — ✓ Bien déjà supérieur à la dette';
-      } else if (res.moisCroisement) {
-        cross = ` — Croisement : An ${Math.ceil(res.moisCroisement / 12)}, mois ${res.moisCroisement}`;
-      }
-      titleEl.textContent = 'Capital restant dû vs Valeur du bien' + cross;
-    }
+    if (titleEl) titleEl.textContent = titleBase + cross;
+  }
+
+  function toggleGraphiquePrincipalMode(mode) {
+    modeChartPrincipal = mode;
+    document.getElementById('btn-principal-gain').classList.toggle('active', mode === 'gain');
+    document.getElementById('btn-principal-capital').classList.toggle('active', mode === 'capital');
+    if (chartPrincipal) { chartPrincipal.destroy(); chartPrincipal = null; }
+    onInput();
   }
   function renderGraphiqueSecondaire(res) {
   const ctx = document.getElementById('chart-secondaire').getContext('2d');
@@ -1234,13 +1459,13 @@
         {
           label: 'Capital remboursé',
           data: res.capitalParAn,
-          backgroundColor: 'rgba(37,99,235,0.8)',
+          backgroundColor: 'rgba(91,128,168,0.85)',
           stack: 'stack'
         },
         {
           label: 'Intérêts payés',
           data: res.interetsParAn,
-          backgroundColor: 'rgba(220,38,38,0.7)',
+          backgroundColor: 'rgba(177,80,63,0.75)',
           stack: 'stack'
         }
       ]
@@ -1252,15 +1477,15 @@
         {
           label: 'Capital cumulé',
           data: res.capitalCumule,
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37,99,235,0.12)',
+          borderColor: '#5b80a8',
+          backgroundColor: 'rgba(91,128,168,0.14)',
           fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
         },
         {
           label: 'Intérêts cumulés',
           data: res.interetsCumules,
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220,38,38,0.08)',
+          borderColor: '#b1503f',
+          backgroundColor: 'rgba(177,80,63,0.10)',
           fill: true, tension: 0.3, borderWidth: 2, pointRadius: 0
         }
       ]
@@ -1311,12 +1536,21 @@ function toggleGraphiqueMode(mode) {
   const capitalTotal = res.amortissement.reduce((s, r) => s + r.capital, 0);
   const fraisTotal = res.fraisNotaire + pA.fraisDossier + pA.fraisGarantie;
 
+  const labels = ['Capital', 'Intérêts', 'Assurance', 'Frais'];
+  const values = [Math.round(capitalTotal), res.interetsTotaux, res.assuranceTotale, Math.round(fraisTotal)];
+  const colors = ['#5b80a8', '#b1503f', '#c1652f', '#71956b'];
+  if (pA.travaux > 0) {
+    labels.push('Travaux');
+    values.push(Math.round(pA.travaux));
+    colors.push('#9b6fa3');
+  }
+
   const data = {
-    labels: ['Capital', 'Intérêts', 'Assurance', 'Frais'],
+    labels,
     datasets: [{
-      data: [Math.round(capitalTotal), res.interetsTotaux, res.assuranceTotale, Math.round(fraisTotal)],
-      backgroundColor: ['#2563eb', '#dc2626', '#f59e0b', '#10b981'],
-      borderWidth: 2, borderColor: '#ffffff'
+      data: values,
+      backgroundColor: colors,
+      borderWidth: 2, borderColor: '#f6efe0'
     }]
   };
 
@@ -1344,6 +1578,61 @@ function toggleGraphiqueMode(mode) {
     chartDonut.update();
   }
 }
+
+  function renderRecapFrais(p) {
+    const el = document.getElementById('recap-frais');
+    if (!el) return;
+    const prix = p.prixProjet || 1;
+    const lignes = [
+      { label: `Frais de notaire (${fmtPct(p.fraisNotairePct)} du prix)`, montant: p.fraisNotaire },
+      { label: 'Frais de dossier', montant: p.fraisDossier },
+      { label: `Frais de garantie (${fmtPct(p.tauxGarantie)} du capital financé)`, montant: p.fraisGarantie }
+    ];
+    const totalFrais = lignes.reduce((s, l) => s + l.montant, 0);
+    const travaux = p.travaux || 0;
+    const totalProjet = prix + totalFrais + travaux;
+    const rows = lignes.map(l => `<tr>
+      <td>${l.label}</td>
+      <td>${fmtPct(l.montant / prix * 100)}</td>
+      <td>${fmt(l.montant)}</td>
+    </tr>`).join('');
+    const travauxRow = travaux > 0 ? `<tr>
+      <td>Travaux</td>
+      <td>${fmtPct(travaux / prix * 100)}</td>
+      <td>${fmt(travaux)}</td>
+    </tr>` : '';
+    el.innerHTML = `<table><thead><tr>
+      <th>Poste</th><th>% du prix du bien</th><th>Montant</th>
+    </tr></thead><tbody>
+      <tr><td><strong>Prix du bien</strong></td><td><strong>${fmtPct(100)}</strong></td><td><strong>${fmt(prix)}</strong></td></tr>
+      ${rows}
+      ${travauxRow}
+      <tr><td>Total des frais</td><td>${fmtPct(totalFrais / prix * 100)}</td><td>${fmt(totalFrais)}</td></tr>
+      <tr class="recap-total"><td><strong>Total : Prix du projet</strong></td><td><strong>${fmtPct(totalProjet / prix * 100)}</strong></td><td><strong>${fmt(totalProjet)}</strong></td></tr>
+    </tbody></table>`;
+  }
+
+  function renderRecapFinancement(p, res) {
+    const el = document.getElementById('recap-financement');
+    if (!el) return;
+    const tranches = p.tranches || [];
+    const totalEmprunte = tranches.reduce((s, t) => s + (t.montant || 0), 0);
+    const totalProjet = p.apport + totalEmprunte;
+    const rows = tranches.map(t => `<tr>
+      <td>${t.label}</td>
+      <td>${t.isPTZ ? '0 % (PTZ)' : fmtPct(t.taux)}</td>
+      <td>${t.duree} ans</td>
+      <td>${fmt(t.montant || 0)}</td>
+    </tr>`).join('');
+    el.innerHTML = `<table><thead><tr>
+      <th>Source</th><th>Taux</th><th>Durée</th><th>Montant</th>
+    </tr></thead><tbody>
+      <tr><td><strong>Apport personnel</strong></td><td>—</td><td>—</td><td><strong>${fmt(p.apport)}</strong></td></tr>
+      ${rows}
+      <tr class="recap-total"><td><strong>Total : Prix du projet</strong></td><td><strong>${fmtPct(res.taeg)}</strong><br><span style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;opacity:.75">TAEG global</span></td><td>—</td><td><strong>${fmt(totalProjet)}</strong></td></tr>
+    </tbody></table>`;
+  }
+
   function renderTableau(rows, duree) {
   const hasPTZ = rows.some(r => r.ptz > 0);
 
@@ -1581,7 +1870,7 @@ function renderProjetsList() {
   const el = document.getElementById('projets-list');
   if (!el) return;
   if (!projets.length) {
-    el.innerHTML = '<p style="color:#94a3b8;font-size:12px;text-align:center;padding:20px">Aucun projet sauvegardé</p>';
+    el.innerHTML = '<p style="font-family:var(--font-mono);color:var(--parchment-muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:24px">Aucun projet sauvegardé</p>';
     return;
   }
   el.innerHTML = projets.map(p => `
@@ -1591,11 +1880,11 @@ function renderProjetsList() {
         <span class="projet-card-type">${p.typeProjet || ''}</span>
       </div>
       <div class="projet-card-kpi">${fmt(p.mensualite)}/mois · ${p.date}</div>
-      ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${p.urlAnnonce}" target="_blank" rel="noopener">🔗 Voir l'annonce</a></div>` : ''}
+      ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${p.urlAnnonce}" target="_blank" rel="noopener">→ Voir l'annonce</a></div>` : ''}
       <div class="projet-card-actions">
         <button onclick="chargerProjet('${p.id}')">Charger</button>
-        <button onclick="partagerProjet('${p.id}')">🔗 Partager</button>
-        <button onclick="supprimerProjet('${p.id}')" style="color:#f87171">🗑</button>
+        <button onclick="partagerProjet('${p.id}')">Partager</button>
+        <button onclick="supprimerProjet('${p.id}')" style="color:var(--brick);border-color:var(--brick)">Suppr.</button>
       </div>
     </div>`).join('');
 }
@@ -1680,6 +1969,8 @@ function restaurerDepuisURL() {
 }
 
   // Init
+  const mastheadDateEl = document.getElementById('masthead-date');
+  if (mastheadDateEl) mastheadDateEl.textContent = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   restaurerDepuisURL();
   // If URL state didn't set tranches, start with defaults for Ancien
   if (tranchesA.length === 0) {
