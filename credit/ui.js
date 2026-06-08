@@ -786,11 +786,9 @@ function toggleTableauMode(mode) {
   document.getElementById('btn-t-an').classList.toggle('active', mode === 'annee');
   onInput();
 }
-  function toggleScenarioB() {
-  scenarioBActif = !scenarioBActif;
-  document.getElementById('sidebar-b').style.display = scenarioBActif ? 'flex' : 'none';
-
-  if (scenarioBActif) {
+function openScenarioBPanel() {
+  if (!scenarioBActif) {
+    scenarioBActif = true;
     // Pré-remplir B avec les valeurs de A
     const ids = ['prix-projet','assurance','apport','notaire',
                  'dossier','garantie-pct','differe-mois',
@@ -817,9 +815,18 @@ function toggleTableauMode(mode) {
     if (badgeEl) badgeEl.textContent = pr.notaireBadge;
     const travauxEl = document.getElementById('b-travaux-section');
     if (travauxEl) travauxEl.style.display = pr.travaux ? 'block' : 'none';
-  } else {
-    [chartPrincipal, chartSecondaire, chartDonut].forEach(c => { if (c) c.destroy(); });
-    chartPrincipal = null; chartSecondaire = null; chartDonut = null;
   }
+  document.getElementById('scenario-b-overlay').classList.add('open');
+  onInput();
+}
+
+function closeScenarioBPanel(event) {
+  if (event && event.target.id !== 'scenario-b-overlay') return;
+  document.getElementById('scenario-b-overlay').classList.remove('open');
+}
+
+function removeScenarioB() {
+  scenarioBActif = false;
+  document.getElementById('scenario-b-overlay').classList.remove('open');
   onInput();
 }
