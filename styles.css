@@ -354,3 +354,24 @@
   cursor: pointer; margin-top: 6px; transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
 .btn-add-tranche:hover { color: var(--rust); border-color: var(--rust); background: rgba(193,101,47,.06); }
+
+/* ---- MODE SWITCH ---- */
+.mode-switch { display: flex; gap: 7px; }
+.mode-btn {
+  background: rgba(8, 13, 26, .35);
+  border: 1px solid rgba(138, 166, 196, .3); border-radius: 3px;
+  color: var(--parchment-muted);
+  font-family: var(--font-display); font-style: italic; font-size: 13px;
+  padding: 8px 16px; cursor: pointer; transition: all .2s ease;
+}
+.mode-btn:hover:not(:disabled) { border-color: var(--blueprint-soft); color: var(--parchment); }
+.mode-btn.active {
+  background: var(--rust); border-color: var(--rust);
+  color: var(--paper); font-style: normal; font-weight: 600;
+}
+.mode-btn:disabled { cursor: not-allowed; opacity: .55; }
+.mode-badge {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(138,166,196,.18); color: var(--parchment-muted);
+  border-radius: 2px; padding: 2px 6px; margin-left: 6px;
+}
