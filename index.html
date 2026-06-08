@@ -26,111 +26,180 @@
     </div>
   </header>
   <div class="app">
+    <div class="app-mode" id="app-credit">
 
-    <!-- ===== SIDEBAR A ===== -->
-    <aside class="sidebar" id="sidebar-a">
+    <!-- ===== SECTION PARAMÈTRES — SCÉNARIO A ===== -->
+    <section class="params-section" id="params-section-a">
+      <button type="button" class="params-toggle" onclick="toggleParamsSection()" aria-expanded="true" aria-controls="params-body-a">
+        <span class="params-toggle-label">Paramètres du projet</span>
+        <span class="params-toggle-chevron">▾</span>
+      </button>
+      <div class="params-body" id="params-body-a">
+        <div class="params-grid">
 
-      <!-- PROJET -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-title" data-index="01">Type de projet</div>
-        <div class="type-segment" id="a-type-segment">
-          <button type="button" class="type-seg-btn" data-type="ancien" onclick="selectTypeProjet('a','ancien')">Ancien</button>
-          <button type="button" class="type-seg-btn" data-type="neuf" onclick="selectTypeProjet('a','neuf')">Neuf</button>
-          <button type="button" class="type-seg-btn" data-type="vefa" onclick="selectTypeProjet('a','vefa')">VEFA</button>
+          <!-- PROJET -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-index="01">Type de projet</div>
+            <div class="type-segment" id="a-type-segment">
+              <button type="button" class="type-seg-btn" data-type="ancien" onclick="selectTypeProjet('a','ancien')">Ancien</button>
+              <button type="button" class="type-seg-btn" data-type="neuf" onclick="selectTypeProjet('a','neuf')">Neuf</button>
+              <button type="button" class="type-seg-btn" data-type="vefa" onclick="selectTypeProjet('a','vefa')">VEFA</button>
+            </div>
+            <select id="a-type-projet" style="display:none">
+              <option value="ancien">Ancien</option>
+              <option value="neuf">Neuf</option>
+              <option value="vefa">VEFA</option>
+            </select>
+            <div class="sidebar-field">
+              <label>Prix du bien (€)</label>
+              <input type="number" id="a-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
+            </div>
+            <div class="sidebar-field">
+              <label>Apport personnel (€)</label>
+              <input type="number" id="a-apport" value="120000" min="0" step="1000" oninput="onInput()">
+            </div>
+            <div id="a-capital-display"></div>
+          </div>
+
+          <!-- EMPRUNTS -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-index="02">Emprunts</div>
+            <div class="sidebar-field">
+              <label>Taux assurance annuel (%)</label>
+              <input type="number" id="a-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
+            </div>
+            <div id="a-tranches-list"></div>
+            <button class="btn-add-tranche" onclick="addTranche('a')">+ Ajouter un prêt</button>
+          </div>
+
+          <!-- FRAIS -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-index="03">Frais</div>
+            <div class="sidebar-field">
+              <label>Frais de notaire (%) <span class="badge" id="a-notaire-badge">[7–8,5 %]</span></label>
+              <input type="number" id="a-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
+            </div>
+            <div class="sidebar-field">
+              <label>Frais de dossier (€) <span class="badge">[500–1 500 €]</span></label>
+              <input type="number" id="a-dossier" value="1000" min="500" max="1500" step="100" oninput="onInput()">
+            </div>
+            <div class="sidebar-field">
+              <label>Frais de garantie (%) <span class="badge">[1–2 %]</span></label>
+              <input type="number" id="a-garantie-pct" value="1.5" min="1" max="2" step="0.1" oninput="onInput()">
+            </div>
+          </div>
+
+          <!-- TRAVAUX -->
+          <div class="sidebar-group" id="a-travaux-section">
+            <div class="sidebar-group-title" data-index="04">Travaux</div>
+            <div class="sidebar-field">
+              <label>Surface (m²)</label>
+              <input type="number" id="a-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('a','m2')">
+            </div>
+            <div class="sidebar-field">
+              <label>Prix au m² (€)</label>
+              <input type="number" id="a-travaux-prix-m2" value="0" min="0" step="10" oninput="onTravauxInput('a','prix-m2')">
+            </div>
+            <div class="sidebar-field">
+              <label>Total travaux (€)</label>
+              <input type="number" id="a-travaux-total" value="0" min="0" step="100" oninput="onTravauxInput('a','total')">
+            </div>
+          </div>
+
+          <!-- DIFFÉRÉ -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-index="05">Différé</div>
+            <div class="sidebar-field">
+              <label>Durée du différé (mois)</label>
+              <input type="number" id="a-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
+            </div>
+            <div class="sidebar-field">
+              <label>Type de différé</label>
+              <select id="a-differe-type" onchange="onInput()">
+                <option value="partiel">Partiel (intérêts seuls)</option>
+                <option value="total">Total (aucun paiement)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- VALORISATION -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-index="06">Valorisation du bien</div>
+            <div class="sidebar-field">
+              <label>Appréciation annuelle (%)</label>
+              <input type="number" id="a-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
+            </div>
+          </div>
+
+        </div><!-- end .params-grid -->
+
+        <div class="sidebar-footer">
+          <button class="btn-projets" onclick="openProjetsPanel()">Projets sauvegardés</button>
+          <button class="btn-scenario" onclick="toggleScenarioB()">+ Ajouter scénario B</button>
         </div>
-        <select id="a-type-projet" style="display:none">
-          <option value="ancien">Ancien</option>
-          <option value="neuf">Neuf</option>
-          <option value="vefa">VEFA</option>
-        </select>
-        <div class="sidebar-field">
-          <label>Prix du bien (€)</label>
-          <input type="number" id="a-prix-projet" value="290000" min="1" step="1000" oninput="onInput()">
+      </div><!-- end .params-body -->
+    </section>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+      <div id="kpis" class="kpis"></div>
+
+      <div class="charts-row">
+        <div class="card chart-card chart-card--wide" id="card-principal">
+          <div class="card-header">
+            <span class="card-title" id="title-principal">Gain net potentiel à la revente (hors apport)</span>
+            <span class="toggle-group">
+              <button id="btn-principal-gain" class="toggle-btn active" onclick="toggleGraphiquePrincipalMode('gain')">Gain net (hors apport)</button>
+              <button id="btn-principal-capital" class="toggle-btn" onclick="toggleGraphiquePrincipalMode('capital')">Capital vs Valeur</button>
+            </span>
+          </div>
+          <canvas id="chart-principal"></canvas>
         </div>
-        <div class="sidebar-field">
-          <label>Apport personnel (€)</label>
-          <input type="number" id="a-apport" value="120000" min="0" step="1000" oninput="onInput()">
+        <div class="card chart-card">
+          <div class="card-header">
+            <span class="card-title">Remboursement</span>
+            <span class="toggle-group">
+              <button id="btn-mode-a" class="toggle-btn active" onclick="toggleGraphiqueMode('A')">Barres / an</button>
+              <button id="btn-mode-b" class="toggle-btn" onclick="toggleGraphiqueMode('B')">Aires cumulées</button>
+            </span>
+          </div>
+          <canvas id="chart-secondaire"></canvas>
         </div>
-        <div id="a-capital-display"></div>
+        <div class="card chart-card chart-card--small">
+          <div class="card-header"><span class="card-title">Répartition coût</span></div>
+          <canvas id="chart-donut"></canvas>
+        </div>
       </div>
 
-      <!-- EMPRUNTS -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-title" data-index="02">Emprunts</div>
-        <div class="sidebar-field">
-          <label>Taux assurance annuel (%)</label>
-          <input type="number" id="a-assurance" value="0.18" min="0" max="5" step="0.01" oninput="onInput()">
+      <div class="recap-row">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Récapitulatif des frais (% du prix du bien)</span>
+          </div>
+          <div id="recap-frais" class="tableau-wrapper"></div>
         </div>
-        <div id="a-tranches-list"></div>
-        <button class="btn-add-tranche" onclick="addTranche('a')">+ Ajouter un prêt</button>
-      </div>
-
-      <!-- FRAIS -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-title" data-index="03">Frais</div>
-        <div class="sidebar-field">
-          <label>Frais de notaire (%) <span class="badge" id="a-notaire-badge">[7–8,5 %]</span></label>
-          <input type="number" id="a-notaire" value="7.5" min="7" max="8.5" step="0.1" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Frais de dossier (€) <span class="badge">[500–1 500 €]</span></label>
-          <input type="number" id="a-dossier" value="1000" min="500" max="1500" step="100" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Frais de garantie (%) <span class="badge">[1–2 %]</span></label>
-          <input type="number" id="a-garantie-pct" value="1.5" min="1" max="2" step="0.1" oninput="onInput()">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Plan de financement</span>
+          </div>
+          <div id="recap-financement" class="tableau-wrapper"></div>
         </div>
       </div>
 
-      <!-- TRAVAUX -->
-      <div class="sidebar-group" id="a-travaux-section">
-        <div class="sidebar-group-title" data-index="04">Travaux</div>
-        <div class="sidebar-field">
-          <label>Surface (m²)</label>
-          <input type="number" id="a-travaux-m2" value="0" min="0" step="1" oninput="onTravauxInput('a','m2')">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tableau d'amortissement</span>
+          <span class="toggle-group">
+            <button id="btn-t-mois" class="toggle-btn active" onclick="toggleTableauMode('mois')">Par mois</button>
+            <button id="btn-t-an" class="toggle-btn" onclick="toggleTableauMode('annee')">Par année</button>
+          </span>
         </div>
-        <div class="sidebar-field">
-          <label>Prix au m² (€)</label>
-          <input type="number" id="a-travaux-prix-m2" value="0" min="0" step="10" oninput="onTravauxInput('a','prix-m2')">
-        </div>
-        <div class="sidebar-field">
-          <label>Total travaux (€)</label>
-          <input type="number" id="a-travaux-total" value="0" min="0" step="100" oninput="onTravauxInput('a','total')">
-        </div>
+        <div id="tableau" class="tableau-wrapper"></div>
       </div>
+    </main>
+    </div><!-- end .app-mode#app-credit -->
 
-      <!-- DIFFÉRÉ -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-title" data-index="05">Différé</div>
-        <div class="sidebar-field">
-          <label>Durée du différé (mois)</label>
-          <input type="number" id="a-differe-mois" value="0" min="0" max="24" step="1" oninput="onInput()">
-        </div>
-        <div class="sidebar-field">
-          <label>Type de différé</label>
-          <select id="a-differe-type" onchange="onInput()">
-            <option value="partiel">Partiel (intérêts seuls)</option>
-            <option value="total">Total (aucun paiement)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- VALORISATION -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-title" data-index="06">Valorisation du bien</div>
-        <div class="sidebar-field">
-          <label>Appréciation annuelle (%)</label>
-          <input type="number" id="a-apprec" value="2.0" min="-10" max="20" step="0.1" oninput="onInput()">
-        </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <button class="btn-projets" onclick="openProjetsPanel()">Projets sauvegardés</button>
-        <button class="btn-scenario" onclick="toggleScenarioB()">+ Ajouter scénario B</button>
-      </div>
-    </aside>
-
-    <!-- ===== SIDEBAR B (hidden by default) ===== -->
+    <!-- ===== SIDEBAR B (sera retirée en Phase E) ===== -->
     <aside class="sidebar" id="sidebar-b" style="display:none">
 
       <!-- PROJET B -->
@@ -232,64 +301,7 @@
       </div>
     </aside>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="content">
-      <div id="kpis" class="kpis"></div>
-
-      <div class="charts-row">
-        <div class="card chart-card chart-card--wide" id="card-principal">
-          <div class="card-header">
-            <span class="card-title" id="title-principal">Gain net potentiel à la revente (hors apport)</span>
-            <span class="toggle-group">
-              <button id="btn-principal-gain" class="toggle-btn active" onclick="toggleGraphiquePrincipalMode('gain')">Gain net (hors apport)</button>
-              <button id="btn-principal-capital" class="toggle-btn" onclick="toggleGraphiquePrincipalMode('capital')">Capital vs Valeur</button>
-            </span>
-          </div>
-          <canvas id="chart-principal"></canvas>
-        </div>
-        <div class="card chart-card">
-          <div class="card-header">
-            <span class="card-title">Remboursement</span>
-            <span class="toggle-group">
-              <button id="btn-mode-a" class="toggle-btn active" onclick="toggleGraphiqueMode('A')">Barres / an</button>
-              <button id="btn-mode-b" class="toggle-btn" onclick="toggleGraphiqueMode('B')">Aires cumulées</button>
-            </span>
-          </div>
-          <canvas id="chart-secondaire"></canvas>
-        </div>
-        <div class="card chart-card chart-card--small">
-          <div class="card-header"><span class="card-title">Répartition coût</span></div>
-          <canvas id="chart-donut"></canvas>
-        </div>
-      </div>
-
-      <div class="recap-row">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Récapitulatif des frais (% du prix du bien)</span>
-          </div>
-          <div id="recap-frais" class="tableau-wrapper"></div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Plan de financement</span>
-          </div>
-          <div id="recap-financement" class="tableau-wrapper"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Tableau d'amortissement</span>
-          <span class="toggle-group">
-            <button id="btn-t-mois" class="toggle-btn active" onclick="toggleTableauMode('mois')">Par mois</button>
-            <button id="btn-t-an" class="toggle-btn" onclick="toggleTableauMode('annee')">Par année</button>
-          </span>
-        </div>
-        <div id="tableau" class="tableau-wrapper"></div>
-      </div>
-    </main>
-  </div>
+  </div><!-- end .app -->
 
   <!-- ===== PANNEAU PROJETS ===== -->
   <div class="projets-overlay" id="projets-overlay" onclick="closeProjetsPanel(event)">

@@ -8,6 +8,13 @@ function switchMode(mode) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 }
 
+function toggleParamsSection() {
+  const section = document.getElementById('params-section-a');
+  const toggle = section.querySelector('.params-toggle');
+  const isCollapsed = section.classList.toggle('collapsed');
+  toggle.setAttribute('aria-expanded', String(!isCollapsed));
+}
+
 function initApp() {
   const mastheadDateEl = document.getElementById('masthead-date');
   if (mastheadDateEl) mastheadDateEl.textContent = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
