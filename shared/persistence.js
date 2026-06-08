@@ -3,7 +3,10 @@
 const STORAGE_KEY = 'simulateur_projets';
 
 function chargerProjets() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  try {
+    const projets = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    return projets.map(p => Object.assign({ mode: 'credit' }, p));
+  }
   catch { return []; }
 }
 
@@ -28,6 +31,7 @@ function sauvegarderProjet() {
     nom,
     urlAnnonce,
     typeProjet: params.typeProjet,
+    mode: 'credit',
     date: new Date().toLocaleDateString('fr-FR'),
     mensualite: res ? res.mensualite : 0,
     params
@@ -58,6 +62,7 @@ function mettreAJourProjet(id) {
     nom: nomSaisi || projet.nom,
     urlAnnonce: urlSaisie || projet.urlAnnonce,
     typeProjet: params.typeProjet,
+    mode: projets[idx].mode || 'credit',
     date: new Date().toLocaleDateString('fr-FR'),
     mensualite: res ? res.mensualite : 0,
     params
