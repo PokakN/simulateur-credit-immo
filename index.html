@@ -1882,9 +1882,16 @@ function importerProjets(event) {
       const existing = chargerProjets();
       const existingIds = new Set(existing.map(p => p.id));
       const newOnes = imported.filter(p => !existingIds.has(p.id));
+      const ignores = imported.length - newOnes.length;
       sauvegarderProjets([...existing, ...newOnes]);
       renderProjetsList();
-      showToast(`${newOnes.length} projet(s) importé(s)`);
+      if (newOnes.length === 0 && ignores > 0) {
+        showToast(`Aucun nouveau projet : ${ignores} déjà présent(s)`);
+      } else if (ignores > 0) {
+        showToast(`${newOnes.length} projet(s) importé(s), ${ignores} déjà présent(s) (ignorés)`);
+      } else {
+        showToast(`${newOnes.length} projet(s) importé(s)`);
+      }
     } catch {
       showToast('Erreur : fichier JSON invalide');
     }
