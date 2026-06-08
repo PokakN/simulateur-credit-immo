@@ -50,15 +50,7 @@
       text-transform: uppercase; color: var(--parchment-muted);
     }
 
-    /* ---- SIDEBAR ---- */
-    .sidebar {
-      width: 320px; min-width: 320px;
-      background: var(--ink);
-      color: var(--parchment);
-      padding: 22px 20px;
-      display: flex; flex-direction: column;
-      overflow-y: auto; height: 100%;
-    }
+    /* ---- SIDEBAR GROUPS ---- */
     .sidebar-group {
       margin-bottom: 16px; padding: 18px 18px 20px;
       background: rgba(232, 225, 210, .045);
@@ -255,8 +247,7 @@
     @media (max-width: 980px) {
       body { overflow: auto; }
       .app, .app-mode { flex-direction: column; height: auto; }
-      .sidebar, .content { height: auto; overflow-y: visible; }
-      .sidebar { width: 100%; min-width: 0; }
+      .content { height: auto; overflow-y: visible; }
       .params-section, .content { height: auto; overflow-y: visible; }
       .params-section { width: 100%; min-width: 0; max-width: none; }
       .charts-row { grid-template-columns: 1fr; }
@@ -304,6 +295,7 @@
   animation: slideInPanel .3s cubic-bezier(.19,1,.22,1) both;
 }
 @keyframes slideInPanel { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.projets-panel--wide { width: 640px; }
 .projets-panel-header {
   padding: 20px; border-bottom: 1px solid var(--ink-line);
   display: flex; justify-content: space-between; align-items: center;
@@ -327,6 +319,8 @@
   cursor: pointer; transition: all .15s ease;
 }
 .projets-panel-footer button:hover { border-color: var(--blueprint-soft); color: var(--blueprint-soft); }
+.projets-panel-footer .btn-danger { background: var(--brick); border: none; border-radius: 3px; color: var(--paper); font-family: var(--font-display); font-size: 13px; padding: 10px 16px; cursor: pointer; }
+.projets-panel-footer .btn-danger:hover { opacity: .85; }
 .projet-card {
   background: var(--paper); color: var(--ink-text);
   border-radius: 4px; padding: 15px;
