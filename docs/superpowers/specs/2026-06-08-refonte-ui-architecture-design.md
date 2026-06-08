@@ -39,8 +39,7 @@ continue de fonctionner tel quel) :
 index.html              → coquille : masthead, sélecteur de mode, conteneurs de montage
 shared/
   calc-utils.js         → fmt, fmtPct, fmtRaw, calcMensualite, calcTAEG, helpers génériques
-  persistence.js        → projets localStorage (sauvegarde/chargement/export/import),
-                          état d'URL partageable (?state=)
+  persistence.js        → projets localStorage (sauvegarde/chargement/export/import)
   ui-components.js      → rendu de la section paramètres (cartes thématiques, collapse),
                           setup des graphiques Chart.js, overlay/panel générique, toasts
 credit/
@@ -118,12 +117,15 @@ dupliquant graphiques/tableaux) est résolu ainsi :
 
 ## Persistance et compatibilité ascendante
 
-- **Projets sauvegardés** (`localStorage`, `STORAGE_KEY = 'simulateur_projets'`) : les entrées
-  existantes n'ont pas de champ `mode`. Au chargement, une entrée sans `mode` est traitée comme
-  `mode: 'credit'` — entièrement rétrocompatible, aucune migration de données nécessaire. Les
-  nouvelles sauvegardes enregistrent `mode: 'credit'` (ou `'locatif'` une fois ce mode disponible).
-- **État d'URL partageable** (`?state=`, base64) : même principe — l'objet encodé gagne un champ
-  `mode`, traité comme `'credit'` par défaut à la restauration si absent.
+- **Projets sauvegardés** (`localStorage`, `STORAGE_KEY = 'simulateur_projets'`, gérés via
+  `sauvegarderProjet`/`mettreAJourProjet`/`chargerProjet`/`supprimerProjet`/`exporterProjets`/
+  `importerProjets`) : les entrées existantes n'ont pas de champ `mode`. Au chargement, une entrée
+  sans `mode` est traitée comme `mode: 'credit'` — entièrement rétrocompatible, aucune migration de
+  données nécessaire. Les nouvelles sauvegardes enregistrent `mode: 'credit'` (ou `'locatif'` une
+  fois ce mode disponible).
+- **Pas d'état d'URL partageable** : cette fonctionnalité a été retirée du projet avant cette refonte
+  (voir commits `aa94a98`/`e1b684d`, "retrait du partage") ; il n'y a donc rien à migrer sur ce
+  point. La persistance repose uniquement sur `localStorage`.
 - **Scénario B** : la forme des données (`tranchesB`, params B) ne change pas ; seule sa
   présentation change (voir section précédente). Les fonctions de lecture/écriture existantes
   restent valables telles quelles.
