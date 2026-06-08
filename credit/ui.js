@@ -331,7 +331,7 @@
     var rows = [
       { label: 'Mensualité',           a: resA.mensualite,         b: resB.mensualite,         fmt: fmt },
       { label: 'Coût total opération', a: resA.coutTotalOperation, b: resB.coutTotalOperation, fmt: fmt },
-      { label: 'Plus-value nette',     a: resA.plusValueNette,     b: resB.plusValueNette,     fmt: fmt },
+      { label: 'Plus-value nette',     a: resA.plusValueNette,     b: resB.plusValueNette,     fmt: fmt, invertDelta: true },
       { label: 'TAEG',                 a: resA.taeg,               b: resB.taeg,               fmt: fmtPct },
       { label: 'Mois de rentabilité',  a: resA.moisRentabilite,    b: resB.moisRentabilite,    fmt: function(n) { return n ? 'Mois ' + n : '—'; }, noDelta: true }
     ];
@@ -340,7 +340,9 @@
       if (!r.noDelta) {
         var delta = r.b - r.a;
         deltaTxt = fmtDelta(delta, r.fmt);
-        deltaClass = delta === 0 ? '' : (delta <= 0 ? 'comparison-delta--good' : 'comparison-delta--bad');
+        var positive = delta > 0;
+        var isGood = r.invertDelta ? positive : !positive;
+        deltaClass = delta === 0 ? '' : (isGood ? 'comparison-delta--good' : 'comparison-delta--bad');
       }
       return '<div class="comparison-row">' +
         '<span class="comparison-label">' + r.label + '</span>' +
@@ -418,7 +420,13 @@
           refreshTrancheDerivedValues('b');
           renderComparisonStrip(resA, resB);
           stripEl.style.display = '';
+        } else {
+          stripEl.style.display = 'none';
+          stripEl.innerHTML = '';
         }
+      } else {
+        stripEl.style.display = 'none';
+        stripEl.innerHTML = '';
       }
     } else {
       stripEl.style.display = 'none';
