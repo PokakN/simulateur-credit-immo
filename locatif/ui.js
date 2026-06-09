@@ -323,30 +323,30 @@ function renderKPIsLocatif(r) {
   const cfClass = cfNet >= 0 ? 'kpi-pos' : 'kpi-neg';
 
   document.getElementById('loc-results').innerHTML = `
-<div id="loc-kpis" class="kpis-grid">
-  <div class="kpi-card">
+<div id="loc-kpis" class="kpis kpis-grid">
+  <div class="kpi-card kpi-card--accent">
     <div class="kpi-label">Cash-flow net</div>
     <div class="kpi-value ${cfClass}">${fmt(Math.abs(cfNet))}/mois</div>
     <div class="kpi-sub">${cfLabel}</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Mensualité crédit</div>
-    <div class="kpi-value">${fmt(r.mensualite)}/mois</div>
+    <div class="kpi-value kpi-value--mono">${fmt(r.mensualite)}/mois</div>
     <div class="kpi-sub">assurance incluse</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Patrimoine net (an ${r.horizonAns})</div>
-    <div class="kpi-value kpi-pos">${fmt(r.patrimoineNetHorizon)}</div>
+    <div class="kpi-value kpi-value--green">${fmt(r.patrimoineNetHorizon)}</div>
     <div class="kpi-sub">valeur − dette restante</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Impôt annuel estimé</div>
-    <div class="kpi-value">${fmt(r.fiscalDetail[0]?.fiscaliteAnnuelle || 0)}</div>
+    <div class="kpi-value kpi-value--mono">${fmt(r.fiscalDetail[0]?.fiscaliteAnnuelle || 0)}</div>
     <div class="kpi-sub">dont PS ${fmt(r.fiscalDetail[0]?.prelevementsSociaux || 0)}</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">TAEG</div>
-    <div class="kpi-value">${fmtPct(r.taeg)}</div>
+    <div class="kpi-value kpi-value--mono">${fmtPct(r.taeg)}</div>
     <div class="kpi-sub">assurance comprise</div>
   </div>
 </div>
@@ -670,16 +670,16 @@ function renderFiscalDetailLocatif(r, p) {
       ${chargesRows}
       <div class="fd-row result-row" style="margin-top:.3rem">
         <span>Base imposable</span>
-        <span style="font-family:var(--font-mono);font-weight:700;color:${fd.baseImposable > 0 ? '#b87020' : 'var(--moss)'}">
+        <span style="font-family:var(--font-mono);font-weight:700;color:${fd.baseImposable > 0 ? 'var(--rust)' : 'var(--sage)'}">
           ${fd.baseImposable > 0 ? '+' : ''}${fmtRaw(fd.baseImposable)}
         </span>
       </div>
-      <div class="fd-row"><span>Impôt sur le revenu (${p.tmi} %)</span><span style="font-family:var(--font-mono);font-weight:600;color:${fd.impots>0?'var(--brick)':'var(--moss)'}">${fd.impots > 0 ? fmtRaw(fd.impots) : '0 € ✓'}</span></div>
+      <div class="fd-row"><span>Impôt sur le revenu (${p.tmi} %)</span><span style="font-family:var(--font-mono);font-weight:600;color:${fd.impots>0?'var(--brick)':'var(--sage)'}">${fd.impots > 0 ? fmtRaw(fd.impots) : '0 € ✓'}</span></div>
       <div class="fd-row"><span>Prélèvements sociaux (17,2 %)</span><span style="font-family:var(--font-mono);font-weight:600">${fmtRaw(fd.prelevementsSociaux)}</span></div>
       ${avantageEstime > 0 ? `
       <div class="fd-row avantage-row">
         <span>Avantage fiscal annuel estimé</span>
-        <span style="font-family:var(--font-mono);font-weight:700;color:var(--moss)">+${fmtRaw(Math.round(avantageEstime))}</span>
+        <span style="font-family:var(--font-mono);font-weight:700;color:var(--sage)">+${fmtRaw(Math.round(avantageEstime))}</span>
       </div>` : ''}
     </div>
     <div class="fiscal-donut-block">
