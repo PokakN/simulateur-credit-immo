@@ -60,7 +60,9 @@ function calcSimulationLocatif(p) {
     + (p.fraisGarantie || 0) + (p.fraisDossier || 0);
 
   // ── Revenus ──────────────────────────────────────────────────────────────
-  const loyerAnnuelBrut = (p.loyerMensuel || 0) * 12;
+  // loyerAnnuelBrut = loyer HC + charges récupérables (total encaissé par le bailleur)
+  // Les charges récupérables reçues sont déjà compensées par chargesCopro côté dépenses.
+  const loyerAnnuelBrut = ((p.loyerMensuel || 0) + (p.chargesRecuperables || 0)) * 12;
   const loyerAnnuelNet  = loyerAnnuelBrut * (1 - (p.vacanceLocative || 0) / 100);
 
   // ── Charges annuelles ────────────────────────────────────────────────────

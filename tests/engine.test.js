@@ -233,12 +233,41 @@ test('LMNP réel : base imposable négative si amortissements couvrent loyers', 
   assert(r.fiscalDetail[0].impots === 0, 'impôts doivent être 0 si base négative');
 });
 
-test('nu_micro : abattement 30 % — base = loyer brut × 0.70', () => {
+test('nu_micro : abattement 30 % — base = (loyer + charges récup) × 12 × 0.70', () => {
   const p = makeLocParams({ regimeFiscal: 'nu_micro' });
   const r = calcSimulationLocatif(p);
-  const loyerBrut = p.loyerMensuel * 12;
+  // loyerAnnuelBrut includes chargesRecuperables (default 0 in makeLocParams)
+  const loyerBrut = (p.loyerMensuel + (p.chargesRecuperables || 0)) * 12;
   const expectedBase = Math.round(loyerBrut * 0.70);
   assertClose(r.fiscalDetail[0].baseImposable, expectedBase, 1, 'base imposable micro');
+});
+
+// ── Charges récupérables ──────────────────────────────────────────────────────
+console.log('\nCharges récupérables');
+
+test('chargesRecuperables augmente loyerAnnuelBrut', () => {
+  const p0 = makeLocParams({ chargesRecuperables: 0 });
+  const p1 = makeLocParams({ chargesRecuperables: 80 });
+  const r0 = calcSimulationLocatif(p0);
+  const r1 = calcSimulationLocatif(p1);
+  assertClose(r1.loyerAnnuelBrut - r0.loyerAnnuelBrut, 80 * 12, 1, 'delta loyerAnnuelBrut');
+});
+
+test('chargesRecuperables améliore le cash-flow', () => {
+  const p0 = makeLocParams({ chargesRecuperables: 0 });
+  const p1 = makeLocParams({ chargesRecuperables: 80 });
+  const r0 = calcSimulationLocatif(p0);
+  const r1 = calcSimulationLocatif(p1);
+  assert(r1.cashFlowDetail.net > r0.cashFlowDetail.net, 'cash-flow ne s\'améliore pas');
+});
+
+test('chargesRecuperables affecte la base imposable nu_micro', () => {
+  const p0 = makeLocParams({ regimeFiscal: 'nu_micro', chargesRecuperables: 0 });
+  const p1 = makeLocParams({ regimeFiscal: 'nu_micro', chargesRecuperables: 100 });
+  const r0 = calcSimulationLocatif(p0);
+  const r1 = calcSimulationLocatif(p1);
+  assert(r1.fiscalDetail[0].baseImposable > r0.fiscalDetail[0].baseImposable,
+    'base imposable micro ne change pas avec charges récup');
 });
 
 // ── calcTAEG ──────────────────────────────────────────────────────────────────
