@@ -396,6 +396,12 @@ git commit -m "feat(locatif): ajouter conteneurs locatif et chargement scripts d
 **Files:**
 - Create: `locatif/ui.js`
 
+> **Pattern collapsible (ajusté post-brainstorming) :** les cartes paramètres utilisent
+> `sidebar-group-title` avec `onclick="toggleSidebarGroup(this.parentElement)"` et `data-index="0N"`,
+> plus un `sidebar-group-summary` (résumé 1 ligne affiché quand replié) — même structure que le mode
+> crédit dans `index.html`. Remplacer `sidebar-group-header` par ce pattern dans toutes les cartes
+> ci-dessous. `toggleSidebarGroup` est déjà défini dans `credit/ui.js` et disponible globalement.
+
 - [ ] **Step 1 : Créer locatif/ui.js avec la sidebar HTML et les tranches**
 
 ```js
@@ -418,7 +424,8 @@ function buildLocatifSidebarHTML() {
 <div class="sidebar-section-title">Acquisition</div>
 
 <div class="sidebar-group" id="loc-group-type">
-  <div class="sidebar-group-header">1 — Type de projet</div>
+  <div class="sidebar-group-title" data-index="01" onclick="toggleSidebarGroup(this.parentElement)">Type de projet</div>
+  <div class="sidebar-group-summary" id="loc-summary-projet"></div>
   <div class="sidebar-group-body">
     <label>Type
       <select id="loc-type-projet" onchange="onTypeChangeLocatif()">
@@ -431,7 +438,8 @@ function buildLocatifSidebarHTML() {
 </div>
 
 <div class="sidebar-group" id="loc-group-prix">
-  <div class="sidebar-group-header">2 — Prix &amp; frais</div>
+  <div class="sidebar-group-title" data-index="02" onclick="toggleSidebarGroup(this.parentElement)">Prix &amp; frais</div>
+  <div class="sidebar-group-summary" id="loc-summary-prix"></div>
   <div class="sidebar-group-body">
     <label>Prix du bien (€) <input type="number" id="loc-prix-projet" value="200000" min="0" oninput="onInputLocatif()"></label>
     <label>Apport (€) <input type="number" id="loc-apport" value="30000" min="0" oninput="onInputLocatif()"></label>
@@ -443,7 +451,8 @@ function buildLocatifSidebarHTML() {
 </div>
 
 <div class="sidebar-group" id="loc-group-travaux">
-  <div class="sidebar-group-header">3 — Travaux &amp; mobilier</div>
+  <div class="sidebar-group-title" data-index="03" onclick="toggleSidebarGroup(this.parentElement)">Travaux &amp; mobilier</div>
+  <div class="sidebar-group-summary" id="loc-summary-travaux"></div>
   <div class="sidebar-group-body">
     <label>Travaux (€) <input type="number" id="loc-travaux-total" value="0" min="0" oninput="onInputLocatif()"></label>
     <label>Mobilier (€) <input type="number" id="loc-mobilier" value="0" min="0" oninput="onInputLocatif()" title="Amortissable en LMNP réel (20%/an sur 5 ans)"></label>
@@ -453,7 +462,8 @@ function buildLocatifSidebarHTML() {
 <div class="sidebar-section-title">Financement</div>
 
 <div class="sidebar-group" id="loc-group-emprunts">
-  <div class="sidebar-group-header">4 — Emprunts</div>
+  <div class="sidebar-group-title" data-index="04" onclick="toggleSidebarGroup(this.parentElement)">Emprunts</div>
+  <div class="sidebar-group-summary" id="loc-summary-emprunts"></div>
   <div class="sidebar-group-body">
     <div id="loc-tranches-container"></div>
     <button class="btn-add-tranche" onclick="addTrancheLoc()">+ Ajouter un prêt</button>
@@ -462,7 +472,8 @@ function buildLocatifSidebarHTML() {
 </div>
 
 <div class="sidebar-group" id="loc-group-differe">
-  <div class="sidebar-group-header">5 — Différé</div>
+  <div class="sidebar-group-title" data-index="05" onclick="toggleSidebarGroup(this.parentElement)">Différé</div>
+  <div class="sidebar-group-summary" id="loc-summary-differe"></div>
   <div class="sidebar-group-body">
     <label>Durée différé (mois) <input type="number" id="loc-differe-mois" value="0" min="0" max="24" oninput="onInputLocatif()"></label>
     <label>Type
@@ -477,7 +488,8 @@ function buildLocatifSidebarHTML() {
 <div class="sidebar-section-title">Exploitation</div>
 
 <div class="sidebar-group" id="loc-group-revenus">
-  <div class="sidebar-group-header">6 — Revenus locatifs</div>
+  <div class="sidebar-group-title" data-index="06" onclick="toggleSidebarGroup(this.parentElement)">Revenus locatifs</div>
+  <div class="sidebar-group-summary" id="loc-summary-revenus"></div>
   <div class="sidebar-group-body">
     <label>Loyer mensuel HC (€) <input type="number" id="loc-loyer" value="900" min="0" oninput="onInputLocatif()"></label>
     <label>Charges récupérables (€/mois) <input type="number" id="loc-charges-recup" value="80" min="0" oninput="onInputLocatif()"></label>
@@ -486,7 +498,8 @@ function buildLocatifSidebarHTML() {
 </div>
 
 <div class="sidebar-group" id="loc-group-charges">
-  <div class="sidebar-group-header">7 — Charges récurrentes</div>
+  <div class="sidebar-group-title" data-index="07" onclick="toggleSidebarGroup(this.parentElement)">Charges récurrentes</div>
+  <div class="sidebar-group-summary" id="loc-summary-charges"></div>
   <div class="sidebar-group-body">
     <label>Charges de copro (€/an) <input type="number" id="loc-charges-copro" value="1200" min="0" oninput="onInputLocatif()"></label>
     <label>Taxe foncière (€/an) <input type="number" id="loc-taxe-fonciere" value="1000" min="0" oninput="onInputLocatif()"></label>
@@ -500,7 +513,8 @@ function buildLocatifSidebarHTML() {
 </div>
 
 <div class="sidebar-group" id="loc-group-fiscal">
-  <div class="sidebar-group-header">8 — Fiscalité</div>
+  <div class="sidebar-group-title" data-index="08" onclick="toggleSidebarGroup(this.parentElement)">Fiscalité</div>
+  <div class="sidebar-group-summary" id="loc-summary-fiscal"></div>
   <div class="sidebar-group-body">
     <label>Régime fiscal
       <select id="loc-regime-fiscal" onchange="onRegimeChangeLocatif()">
@@ -524,7 +538,8 @@ function buildLocatifSidebarHTML() {
 <div class="sidebar-section-title">Valorisation</div>
 
 <div class="sidebar-group" id="loc-group-valori">
-  <div class="sidebar-group-header">9 — Valorisation &amp; horizon</div>
+  <div class="sidebar-group-title" data-index="09" onclick="toggleSidebarGroup(this.parentElement)">Valorisation &amp; horizon</div>
+  <div class="sidebar-group-summary" id="loc-summary-valori"></div>
   <div class="sidebar-group-body">
     <label>Appréciation annuelle (%) <input type="number" id="loc-apprec" value="1.5" step="0.1" oninput="onInputLocatif()"></label>
     <label>Horizon d'investissement (ans)
