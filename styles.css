@@ -438,3 +438,41 @@
 .comparison-delta { text-align: center; font-size: 12px; }
 .comparison-delta--good { color: var(--sage); }
 .comparison-delta--bad { color: var(--brick); }
+
+/* ── Locatif KPIs ── */
+.kpis-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: .6rem; margin-bottom: 1rem; }
+.kpi-card { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .6rem .7rem; text-align: center; }
+.kpi-label { font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; color: var(--parchment-muted); margin-bottom: .2rem; }
+.kpi-value { font-size: 1rem; font-weight: 700; }
+.kpi-sub { font-size: .63rem; color: var(--parchment-muted); margin-top: .1rem; }
+.kpi-pos { color: var(--moss); }
+.kpi-neg { color: var(--brick); }
+
+/* ── Cash-flow breakdown ── */
+.cf-breakdown { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .75rem 1rem; margin-bottom: 1rem; }
+.cf-section-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--parchment-muted); margin-bottom: .5rem; }
+.cf-row { display: flex; justify-content: space-between; font-size: .82rem; padding: .22rem 0; border-bottom: 1px dashed var(--parchment-dark); }
+.cf-row:last-child { border-bottom: none; }
+.cf-row.cf-total { font-weight: 700; border-top: 2px solid var(--parchment-dark); margin-top: .3rem; padding-top: .4rem; }
+.cf-pos { color: var(--moss); font-weight: 600; font-family: var(--font-mono); }
+.cf-neg { color: var(--brick); font-weight: 600; font-family: var(--font-mono); }
+
+/* ── Histogramme ── */
+.histo-section { margin-bottom: 1rem; }
+.histo-horizon-wrapper { display: grid; grid-template-columns: 1fr 160px; gap: 1rem; align-items: start; }
+.horizon-panel { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .8rem; text-align: center; }
+.horizon-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .07em; color: var(--parchment-muted); margin-bottom: .3rem; }
+#loc-horizon-big { font-size: 2rem; font-weight: 700; color: var(--ink); }
+
+/* ── Rendements ── */
+.rendements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; margin-bottom: 1rem; }
+.rdt-card { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .6rem .8rem; text-align: center; }
+.rdt-label { font-size: .63rem; text-transform: uppercase; letter-spacing: .06em; color: var(--parchment-muted); margin-bottom: .2rem; }
+.rdt-value { font-size: 1.05rem; font-weight: 700; }
+.rdt-desc { font-size: .65rem; color: var(--parchment-muted); margin-top: .1rem; }
+
+/* ── Charts ── */
+.charts-section { margin-bottom: 1rem; }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.chart-block { border: 1.5px solid var(--parchment-dark); border-radius: 6px; overflow: hidden; }
+.chart-title { background: var(--parchment-light); padding: .4rem .8rem; font-size: .69rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); border-bottom: 1px solid var(--parchment-dark); }

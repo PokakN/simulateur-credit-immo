@@ -316,3 +316,76 @@ function onHorizonChange() {
   if (display) display.textContent = val + ' ans';
   onInputLocatif();
 }
+
+function renderKPIsLocatif(r) {
+  const cfNet = r.cashFlowDetail.net;
+  const cfLabel = cfNet >= 0 ? 'cash-flow positif' : 'effort d\'épargne';
+  const cfClass = cfNet >= 0 ? 'kpi-pos' : 'kpi-neg';
+
+  document.getElementById('loc-results').innerHTML = `
+<div id="loc-kpis" class="kpis-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Cash-flow net</div>
+    <div class="kpi-value ${cfClass}">${fmt(Math.abs(cfNet))}/mois</div>
+    <div class="kpi-sub">${cfLabel}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Mensualité crédit</div>
+    <div class="kpi-value">${fmt(r.mensualite)}/mois</div>
+    <div class="kpi-sub">assurance incluse</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Patrimoine net (an ${r.horizonAns})</div>
+    <div class="kpi-value kpi-pos">${fmt(r.patrimoineNetHorizon)}</div>
+    <div class="kpi-sub">valeur − dette restante</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Impôt annuel estimé</div>
+    <div class="kpi-value">${fmt(r.fiscalDetail[0]?.fiscaliteAnnuelle || 0)}</div>
+    <div class="kpi-sub">dont PS ${fmt(r.fiscalDetail[0]?.prelevementsSociaux || 0)}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">TAEG</div>
+    <div class="kpi-value">${fmtPct(r.taeg)}</div>
+    <div class="kpi-sub">assurance comprise</div>
+  </div>
+</div>
+
+<div id="loc-cashflow-detail" class="cf-breakdown">
+  <div class="cf-section-title">Décomposition cash-flow mensuel</div>
+  <div class="cf-row"><span>+ Loyer net de vacance</span><span class="cf-pos">${fmt(r.cashFlowDetail.revenus)}</span></div>
+  <div class="cf-row"><span>− Mensualité crédit</span><span class="cf-neg">−${fmt(r.cashFlowDetail.mensualite)}</span></div>
+  <div class="cf-row"><span>− Charges récurrentes</span><span class="cf-neg">−${fmt(r.cashFlowDetail.charges)}</span></div>
+  <div class="cf-row"><span>− Impôt estimé</span><span class="cf-neg">−${fmt(r.cashFlowDetail.impots)}</span></div>
+  <div class="cf-row cf-total"><span>= Cash-flow net mensuel</span><span class="${cfClass}">${cfNet >= 0 ? '+' : ''}${fmt(cfNet)}</span></div>
+</div>
+
+<div id="loc-histo-section" class="histo-section">
+  <div class="cf-section-title">Répartition annuelle coûts vs loyers</div>
+  <div class="histo-horizon-wrapper">
+    <canvas id="loc-chart-histo" height="120"></canvas>
+    <div class="horizon-panel">
+      <div class="horizon-label">Horizon</div>
+      <div id="loc-horizon-big">${r.horizonAns} ans</div>
+    </div>
+  </div>
+</div>
+
+<div id="loc-rendements" class="rendements-grid">
+  <div class="rdt-card"><div class="rdt-label">Rendement brut</div><div class="rdt-value">${fmtPct(r.rendementBrut)}</div><div class="rdt-desc">Loyers bruts / coût acquisition</div></div>
+  <div class="rdt-card"><div class="rdt-label">Rendement net</div><div class="rdt-value">${fmtPct(r.rendementNet)}</div><div class="rdt-desc">Après charges, avant impôts</div></div>
+  <div class="rdt-card"><div class="rdt-label">Rendement net-net</div><div class="rdt-value">${fmtPct(r.rendementNetNet)}</div><div class="rdt-desc">Après charges et fiscalité</div></div>
+</div>
+
+<div id="loc-charts-section" class="charts-section">
+  <div class="charts-grid">
+    <div class="chart-block"><div class="chart-title">Cash-flow annuel</div><canvas id="loc-chart-cashflow" height="140"></canvas></div>
+    <div class="chart-block"><div class="chart-title">Création de patrimoine</div><canvas id="loc-chart-patrimoine" height="140"></canvas></div>
+  </div>
+</div>
+
+<div id="loc-tables-section" class="tables-section"></div>
+<div id="loc-fiscal-annuel-section" class="fiscal-annuel-section"></div>
+<div id="loc-fiscal-detail-section" class="fiscal-detail-section"></div>
+`;
+}
