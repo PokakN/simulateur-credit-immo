@@ -79,7 +79,7 @@
             <input type="number" value="${t.duree}" min="1" max="30" step="1"
               oninput="onTrancheChange('${prefix}','${t.id}','duree',this.value)">
           </div>
-          <div class="tranche-montant-calc" id="${prefix}-tranche-montant-${t.id}">${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span></div>
+          <div class="tranche-montant-calc" id="${prefix}-tranche-montant-${t.id}">${fmt(montantPrincipal)}<span class="tranche-badge">calculé</span></div>
         </div>`;
       } else if (t.isPTZ) {
         const ptzMens = (t.montant || 0) > 0 ? Math.round((t.montant || 0) / (t.duree * 12)) : 0;
@@ -92,7 +92,7 @@
             <input type="number" value="${t.montant || 0}" min="0" step="1000"
               oninput="onTrancheChange('${prefix}','${t.id}','montant',this.value)">
           </div>
-          <div class="tranche-info" id="${prefix}-tranche-info-${t.id}" style="${ptzMens > 0 ? '' : 'display:none'}">${ptzMens > 0 ? fmtRaw(ptzMens) + '/mois pendant ' + t.duree + ' ans · puis libéré' : ''}</div>
+          <div class="tranche-info" id="${prefix}-tranche-info-${t.id}" style="${ptzMens > 0 ? '' : 'display:none'}">${ptzMens > 0 ? fmt(ptzMens) + '/mois pendant ' + t.duree + ' ans · puis libéré' : ''}</div>
         </div>`;
       } else {
         return `<div class="tranche-card">
@@ -145,7 +145,7 @@
     const principal = tranches.find(t => t.isPrincipal);
     if (principal) {
       const el = document.getElementById(`${prefix}-tranche-montant-${principal.id}`);
-      if (el) el.innerHTML = `${fmtRaw(montantPrincipal)}<span class="tranche-badge">calculé</span>`;
+      if (el) el.innerHTML = `${fmt(montantPrincipal)}<span class="tranche-badge">calculé</span>`;
     }
     const ptz = tranches.find(t => t.isPTZ);
     if (ptz) {
@@ -154,7 +154,7 @@
         const ptzMens = (ptz.montant || 0) > 0 ? Math.round((ptz.montant || 0) / (ptz.duree * 12)) : 0;
         if (ptzMens > 0) {
           el.style.display = '';
-          el.textContent = `${fmtRaw(ptzMens)}/mois pendant ${ptz.duree} ans · puis libéré`;
+          el.textContent = `${fmt(ptzMens)}/mois pendant ${ptz.duree} ans · puis libéré`;
         } else {
           el.style.display = 'none';
           el.textContent = '';
@@ -400,6 +400,61 @@
     document.getElementById('kpis').innerHTML = `<div class="kpis">${_kpiHTML(res, 'a')}</div>`;
   }
 
+  function renderSidebarGroupSummaries(prefix) {
+    var p = prefix;
+    function line(key, val) {
+      return '<div class="sg-line"><span class="sg-key">' + (key ? key + ' ' : '') + '</span><span class="sg-val">' + val + '</span></div>';
+    }
+    function set(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; }
+    function gv(id) { var el = document.getElementById(p + '-' + id); return el ? el.value : ''; }
+    function gn(id) { return parseFloat(gv(id)) || 0; }
+    function pct(v) { return fmtRaw(v) + ' %'; }
+
+    // 01 Type de projet
+    var typeLabels = { ancien: 'Ancien', neuf: 'Neuf', vefa: 'VEFA' };
+    set(p + '-summary-projet',
+      line('Type', typeLabels[gv('type-projet')] || '—') +
+      line('Prix', fmt(gn('prix-projet'))) +
+      line('Apport', fmt(gn('apport'))) +
+      line('Capital', fmt(Math.max(0, gn('prix-projet') - gn('apport'))))
+    );
+
+    // 02 Emprunts
+    var tranches = getTranches(p);
+    set(p + '-summary-emprunts',
+      line('Assurance', pct(gn('assurance'))) +
+      tranches.map(function(t) {
+        return line(t.label, t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans');
+      }).join('')
+    );
+
+    // 03 Frais
+    set(p + '-summary-frais',
+      line('Notaire', pct(gn('notaire'))) +
+      line('Dossier', fmt(gn('dossier'))) +
+      line('Garantie', pct(gn('garantie-pct')))
+    );
+
+    // 04 Travaux
+    var total = gn('travaux-total'), m2 = gn('travaux-m2');
+    set(p + '-summary-travaux',
+      total > 0
+        ? line('Total', fmt(total)) + (m2 > 0 ? line('Surface', m2 + ' m²') : '')
+        : line('', '—')
+    );
+
+    // 05 Différé
+    var mois = gn('differe-mois');
+    set(p + '-summary-differe',
+      mois > 0
+        ? line('Durée', mois + ' mois') + line('Type', gv('differe-type') === 'total' ? 'Total' : 'Partiel')
+        : line('', '—')
+    );
+
+    // 06 Valorisation
+    set(p + '-summary-valori', line('Appréciation', pct(gn('apprec')) + ' / an'));
+  }
+
   function onInput() {
     var pA = lireParams('a');
     if (pA.capital <= 0 || pA.duree < 1) return;
@@ -408,6 +463,7 @@
 
     updateCapitalDisplay('a', pA);
     refreshTrancheDerivedValues('a');
+    renderSidebarGroupSummaries('a');
     renderKPIs(resA);
 
     var stripEl = document.getElementById('comparison-strip');
@@ -418,6 +474,7 @@
         if (resB) {
           updateCapitalDisplay('b', pB);
           refreshTrancheDerivedValues('b');
+          renderSidebarGroupSummaries('b');
           renderComparisonStrip(resA, resB);
           stripEl.style.display = '';
         } else {

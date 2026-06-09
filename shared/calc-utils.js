@@ -6,7 +6,7 @@
   function fmtPct(n) { return parseFloat((+n).toFixed(2)) + ' %'; }
 
   function fmtRaw(n) {
-    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €';
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
   }
 
   function calcMensualite(capital, tauxAnnuel, dureeAns) {

@@ -10,6 +10,10 @@ function switchMode(mode) {
 
 const PARAMS_COLLAPSED_KEY = 'simulateur_params_collapsed';
 
+function toggleSidebarGroup(groupEl) {
+  groupEl.classList.toggle('collapsed');
+}
+
 function toggleParamsSection() {
   const section = document.getElementById('params-section-a');
   if (!section) return;
