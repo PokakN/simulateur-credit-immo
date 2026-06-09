@@ -523,3 +523,100 @@ function renderChartsLocatif(r) {
     });
   }
 }
+
+function renderTablesLocatif(r, p) {
+  const el = document.getElementById('loc-tables-section');
+  if (!el) return;
+
+  el.innerHTML = `
+<div class="tables-duo">
+  <table class="recap-table">
+    <caption>Coûts du projet</caption>
+    <tbody>
+      <tr><td>Prix du bien</td><td>${fmt(p.prixProjet)}</td></tr>
+      <tr class="sub"><td>Frais de notaire</td><td>${fmt(p.fraisNotaire)}</td></tr>
+      <tr class="sub"><td>Frais d'agence</td><td>${fmt(p.fraisAgence)}</td></tr>
+      <tr class="sub"><td>Frais de garantie</td><td>${fmt(p.fraisGarantie)}</td></tr>
+      <tr class="sub"><td>Frais de dossier</td><td>${fmt(p.fraisDossier)}</td></tr>
+      ${p.travaux > 0 ? `<tr><td>Travaux</td><td>${fmt(p.travaux)}</td></tr>` : ''}
+      ${p.mobilier > 0 ? `<tr><td>Mobilier</td><td>${fmt(p.mobilier)}</td></tr>` : ''}
+      <tr class="total"><td>Coût total d'acquisition</td><td>${fmt(r.coutTotalAcquisition)}</td></tr>
+      <tr><td>Intérêts totaux (horizon)</td><td>${fmt(r.interetsTotaux)}</td></tr>
+      <tr><td>Assurance emprunteur (horizon)</td><td>${fmt(r.assuranceTotale)}</td></tr>
+      <tr class="total"><td>Coût total de l'opération</td><td>${fmt(r.coutTotalOperation)}</td></tr>
+    </tbody>
+  </table>
+
+  <table class="recap-table">
+    <caption>Financement</caption>
+    <tbody>
+      <tr><td>Apport personnel</td><td>${fmt(p.apport)}</td></tr>
+      ${p.tranches.map(t => `
+        <tr><td>${t.label} (${t.isPTZ ? '0' : fmtPct(t.taux)} / ${t.duree} ans)</td><td>${fmt(t.montant || 0)}</td></tr>
+        <tr class="sub"><td>Mensualité</td><td>${fmt(calcMensualite(t.montant || 0, t.taux, t.duree))}/mois</td></tr>
+      `).join('')}
+      <tr class="total"><td>Total emprunté</td><td>${fmt(p.tranches.reduce((s,t) => s+(t.montant||0), 0))}</td></tr>
+      <tr class="total"><td>Mensualité totale</td><td>${fmt(r.mensualite)}/mois</td></tr>
+      <tr class="total"><td>TAEG</td><td>${fmtPct(r.taeg)}</td></tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+function renderTableauFiscalAnnuel(r) {
+  const el = document.getElementById('loc-fiscal-annuel-section');
+  if (!el) return;
+
+  const falaisAn = r.fiscalDetail.findIndex(fd => fd.baseImposable > 0);
+
+  const rows = r.fiscalDetail.map((fd, i) => {
+    const isCliff = i === falaisAn;
+    const baseClass = fd.baseImposable > 0 ? 'base-pos' : 'base-neg';
+    return `<tr${isCliff ? ' class="fiscal-cliff"' : ''}>
+      <td>${fd.annee}${isCliff ? ' ⚑' : ''}</td>
+      <td>${fmtRaw(fd.loyersNets)}</td>
+      <td class="neg-cell">${fmtRaw(fd.mensualite)}</td>
+      <td class="neg-cell">${fmtRaw(fd.charges)}</td>
+      <td class="neg-cell">${fmtRaw(fd.interetsDeductibles)}</td>
+      <td class="neg-cell">${fmtRaw(fd.amortissementFiscal)}</td>
+      <td class="${baseClass}">${fd.baseImposable > 0 ? '+' : ''}${fmtRaw(fd.baseImposable)}</td>
+      <td${fd.impots > 0 ? ' class="tax-pos"' : ''}>${fmtRaw(fd.fiscaliteAnnuelle)}</td>
+      <td class="${fd.cashFlowNet >= 0 ? 'cf-pos-cell' : 'cf-neg-cell'}">${fd.cashFlowNet >= 0 ? '+' : ''}${fmtRaw(fd.cashFlowNet)}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+<div class="section-block">
+  <div class="section-block-title">Évolution annuelle — ${regimeLabel()}</div>
+  <div style="overflow-x:auto">
+  <table class="annuel-table">
+    <thead>
+      <tr>
+        <th>An</th><th>Loyers nets</th><th>Mensualité</th><th>Charges</th>
+        <th>Intérêts déd.</th><th>Amort. fiscal</th><th>Base imposable</th>
+        <th>Impôts + PS</th><th>Cash-flow net</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr>
+        <td>Total</td>
+        <td>${fmtRaw(r.fiscalDetail.reduce((s,f)=>s+f.loyersNets,0))}</td>
+        <td>${fmtRaw(r.fiscalDetail.reduce((s,f)=>s+f.mensualite,0))}</td>
+        <td>${fmtRaw(r.fiscalDetail.reduce((s,f)=>s+f.charges,0))}</td>
+        <td>—</td><td>—</td><td>—</td>
+        <td>${fmtRaw(r.fiscalDetail.reduce((s,f)=>s+f.fiscaliteAnnuelle,0))}</td>
+        <td>${fmtRaw(r.fiscalDetail.reduce((s,f)=>s+f.cashFlowNet,0))}</td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+  ${falaisAn >= 0 ? `<div class="cliff-note">⚑ <strong>Falaise fiscale à l'an ${r.fiscalDetail[falaisAn].annee}</strong> — les intérêts d'emprunt déductibles s'épuisent, la base imposable bascule positive. L'imposition augmente progressivement chaque année.</div>` : ''}
+</div>`;
+}
+
+function regimeLabel() {
+  const sel = document.getElementById('loc-regime-fiscal');
+  const map = { lmnp_reel: 'LMNP réel', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue réel' };
+  return map[sel?.value] || '';
+}

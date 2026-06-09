@@ -476,3 +476,33 @@
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .chart-block { border: 1.5px solid var(--parchment-dark); border-radius: 6px; overflow: hidden; }
 .chart-title { background: var(--parchment-light); padding: .4rem .8rem; font-size: .69rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); border-bottom: 1px solid var(--parchment-dark); }
+
+/* ── Tables récap locatif ── */
+.tables-duo { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: 1rem; }
+.recap-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.recap-table caption { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); text-align: left; padding-bottom: .4rem; }
+.recap-table tr { border-bottom: 1px solid var(--parchment-dark); }
+.recap-table td { padding: .28rem 0; color: var(--ink-muted); }
+.recap-table td:last-child { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+.recap-table tr.sub td { font-size: .75rem; padding-left: .7rem; color: var(--parchment-muted); }
+.recap-table tr.total td { font-weight: 700; border-top: 1.5px solid var(--parchment-dark); }
+
+/* ── Tableau fiscal annuel ── */
+.section-block { margin-bottom: 1rem; }
+.section-block-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--parchment-muted); margin-bottom: .5rem; padding-bottom: .35rem; border-bottom: 1px solid var(--parchment-dark); }
+.annuel-table { width: 100%; border-collapse: collapse; font-size: .76rem; }
+.annuel-table thead tr { background: var(--parchment-light); }
+.annuel-table th { padding: .35rem .5rem; text-align: right; font-size: .63rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); border-bottom: 2px solid var(--parchment-dark); white-space: nowrap; }
+.annuel-table th:first-child { text-align: center; }
+.annuel-table td { padding: .26rem .5rem; text-align: right; border-bottom: 1px solid #f0e8d8; font-family: var(--font-mono); font-size: .74rem; }
+.annuel-table td:first-child { text-align: center; font-family: var(--font-sans); font-weight: 600; color: var(--ink-muted); }
+.annuel-table tr:hover { background: #faf7f0; }
+.annuel-table tr.fiscal-cliff { background: #fff8e8; }
+.annuel-table tfoot td { font-weight: 700; border-top: 2px solid var(--parchment-dark); background: var(--parchment-light); }
+.annuel-table .neg-cell { color: var(--brick); }
+.annuel-table .base-neg { color: var(--moss); font-style: italic; }
+.annuel-table .base-pos { color: #b87020; font-weight: 600; }
+.annuel-table .tax-pos  { color: var(--brick); }
+.annuel-table .cf-pos-cell { color: var(--moss); font-weight: 600; }
+.annuel-table .cf-neg-cell { color: var(--brick); }
+.cliff-note { font-size: .72rem; color: #7a6050; background: #fff8e8; border: 1px solid #e8c878; border-radius: 5px; padding: .5rem .75rem; margin-top: .6rem; }
