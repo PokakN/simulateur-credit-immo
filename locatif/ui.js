@@ -718,3 +718,30 @@ function renderFiscalDetailLocatif(r, p) {
     });
   }
 }
+
+function onInputLocatif() {
+  const p = lireParamsLocatif();
+  const r = calcSimulationLocatif(p);
+  if (!r) return;
+
+  renderKPIsLocatif(r);
+  renderChartsLocatif(r);
+  renderTablesLocatif(r, p);
+  renderTableauFiscalAnnuel(r);
+  renderFiscalDetailLocatif(r, p);
+}
+
+function mountLocatif() {
+  const panel = document.getElementById('locatif-params-panel');
+  if (panel && !panel.querySelector('#loc-group-type')) {
+    panel.innerHTML = buildLocatifSidebarHTML();
+    initTranchesLoc('ancien');
+    renderTranchesLoc();
+    onRegimeChangeLocatif();
+  }
+  const results = document.getElementById('locatif-results');
+  if (results && !document.getElementById('loc-results')) {
+    results.innerHTML = '<div id="loc-results"></div>';
+  }
+  onInputLocatif();
+}
