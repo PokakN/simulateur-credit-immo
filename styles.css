@@ -526,3 +526,8 @@
 .mode-tab { background: none; border: 1.5px solid var(--parchment-dark); border-radius: 4px; padding: .35rem .8rem; font-family: var(--font-sans); font-size: .8rem; cursor: pointer; color: var(--ink-muted); }
 .mode-tab.active { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
 .mode-tab:hover:not(.active) { background: var(--parchment-light); }
+
+/* ── Project mode badges ── */
+.projet-mode-badge { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .1rem .35rem; border-radius: 3px; margin-right: .3rem; }
+.projet-mode-credit  { background: var(--parchment-light); color: var(--ink-muted); border: 1px solid var(--parchment-dark); }
+.projet-mode-locatif { background: #eef4ee; color: var(--moss); border: 1px solid #7aaa7a; }

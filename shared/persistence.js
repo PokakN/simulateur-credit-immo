@@ -46,6 +46,33 @@ function sauvegarderProjet() {
   showToast(`Projet "${nom}" sauvegardé`);
 }
 
+function sauvegarderProjetLocatif() {
+  const nom = document.getElementById('loc-projet-nom')?.value?.trim();
+  if (!nom) { showToast('Entrez un nom pour le projet'); return; }
+
+  const urlAnnonce = '';
+  const params = lireParamsLocatif();
+  const res    = calcSimulationLocatif(params);
+
+  const projet = {
+    id:         genId(),
+    nom,
+    urlAnnonce,
+    typeProjet: params.typeProjet,
+    mode:       'locatif',
+    date:       new Date().toLocaleDateString('fr-FR'),
+    mensualite: res ? res.mensualite : 0,
+    params
+  };
+
+  const projets = chargerProjets();
+  projets.unshift(projet);
+  sauvegarderProjets(projets);
+  renderProjetsList();
+  document.getElementById('loc-projet-nom').value = '';
+  showToast(`Projet "${nom}" sauvegardé`);
+}
+
 function mettreAJourProjet(id) {
   const projets = chargerProjets();
   const idx = projets.findIndex(p => p.id === id);
@@ -80,6 +107,12 @@ function chargerProjet(id) {
   const projet = projets.find(p => p.id === id);
   if (!projet) return;
 
+  if (projet.mode === 'locatif') {
+    switchMode('locatif');
+    chargerProjetLocatif(projet);
+    return;
+  }
+
   const p = projet.params;
   const set = (suffix, val) => {
     const el = document.getElementById(`a-${suffix}`);
@@ -113,6 +146,63 @@ function chargerProjet(id) {
 
   closeProjetsPanel();
   onTypeChange('a');
+  showToast(`Projet "${projet.nom}" chargé`);
+}
+
+function chargerProjetLocatif(projet) {
+  const p   = projet.params;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined) el.value = val;
+  };
+
+  set('loc-type-projet',   p.typeProjet   || 'ancien');
+  set('loc-prix-projet',   p.prixProjet);
+  set('loc-apport',        p.apport);
+  set('loc-notaire',       p.fraisNotairePct);
+  set('loc-agence',        p.fraisAgence);
+  set('loc-garantie-pct',  p.tauxGarantie ?? 1.5);
+  set('loc-dossier',       p.fraisDossier);
+  set('loc-travaux-total', p.travaux);
+  set('loc-mobilier',      p.mobilier);
+  set('loc-assurance',     p.tauxAssurance);
+  set('loc-apprec',        p.tauxApprec);
+  set('loc-differe-mois',  p.differeMois);
+  set('loc-horizon',       p.horizonAns || p.duree || 20);
+
+  const dtEl = document.getElementById('loc-differe-type');
+  if (dtEl) dtEl.value = p.differeType || 'partiel';
+
+  if (p.tranches && Array.isArray(p.tranches) && p.tranches.length > 0) {
+    tranchesLoc = JSON.parse(JSON.stringify(p.tranches));
+  } else {
+    tranchesLoc = [{ id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false,
+      taux: p.tranches?.[0]?.taux ?? 3.5, duree: p.duree ?? 20, montant: 0 }];
+  }
+  renderTranchesLoc();
+
+  set('loc-loyer',          p.loyerMensuel);
+  set('loc-charges-recup',  p.chargesRecuperables);
+  set('loc-vacance',        p.vacanceLocative);
+  set('loc-charges-copro',  p.chargesCopro);
+  set('loc-taxe-fonciere',  p.taxeFonciere);
+  set('loc-assurance-pno',  p.assurancePNO);
+  set('loc-garantie-loyers',p.garantieLoyers);
+  set('loc-gestion',        p.gestionLocative);
+  set('loc-entretien',      p.entretien);
+  set('loc-comptabilite',   p.comptabilite);
+  set('loc-cfe',            p.cfe);
+
+  const regEl = document.getElementById('loc-regime-fiscal');
+  if (regEl) regEl.value = p.regimeFiscal || 'lmnp_reel';
+  const tmiEl = document.getElementById('loc-tmi');
+  if (tmiEl) tmiEl.value = String(p.tmi || 30);
+
+  const horizDisplay = document.getElementById('loc-horizon-display');
+  if (horizDisplay) horizDisplay.textContent = (p.horizonAns || p.duree || 20) + ' ans';
+
+  onRegimeChangeLocatif();
+  closeProjetsPanel();
   showToast(`Projet "${projet.nom}" chargé`);
 }
 
@@ -175,7 +265,7 @@ function renderProjetsList() {
         <span class="projet-card-name">${p.nom}</span>
         <span class="projet-card-type">${p.typeProjet || ''}</span>
       </div>
-      <div class="projet-card-kpi">${fmt(p.mensualite)}/mois · ${p.date}</div>
+      <div class="projet-card-kpi"><span class="projet-mode-badge projet-mode-${p.mode || 'credit'}">${p.mode === 'locatif' ? 'Locatif' : 'Crédit'}</span>${fmt(p.mensualite)}/mois · ${p.date}</div>
       ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${p.urlAnnonce}" target="_blank" rel="noopener">→ Voir l'annonce</a></div>` : ''}
       <div class="projet-card-actions">
         <button onclick="chargerProjet('${p.id}')">Charger</button>
