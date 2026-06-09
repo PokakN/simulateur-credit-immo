@@ -26,13 +26,16 @@ function buildLocatifSidebarHTML() {
   <div class="sidebar-group-title" data-index="01" onclick="toggleSidebarGroup(this.parentElement)">Type de projet</div>
   <div class="sidebar-group-summary" id="loc-summary-projet"></div>
   <div class="sidebar-group-body">
-    <label>Type
-      <select id="loc-type-projet" onchange="onTypeChangeLocatif()">
-        <option value="ancien">Ancien</option>
-        <option value="neuf">Neuf</option>
-        <option value="vefa">VEFA</option>
-      </select>
-    </label>
+    <div class="type-segment" id="loc-type-segment">
+      <button type="button" class="type-seg-btn" data-type="ancien" onclick="selectTypeProjetLocatif('ancien')">Ancien</button>
+      <button type="button" class="type-seg-btn" data-type="neuf" onclick="selectTypeProjetLocatif('neuf')">Neuf</button>
+      <button type="button" class="type-seg-btn" data-type="vefa" onclick="selectTypeProjetLocatif('vefa')">VEFA</button>
+    </div>
+    <select id="loc-type-projet" style="display:none" onchange="onTypeChangeLocatif()">
+      <option value="ancien">Ancien</option>
+      <option value="neuf">Neuf</option>
+      <option value="vefa">VEFA</option>
+    </select>
   </div>
 </div>
 
@@ -64,9 +67,12 @@ function buildLocatifSidebarHTML() {
   <div class="sidebar-group-title" data-index="04" onclick="toggleSidebarGroup(this.parentElement)">Emprunts</div>
   <div class="sidebar-group-summary" id="loc-summary-emprunts"></div>
   <div class="sidebar-group-body">
+    <div class="sidebar-field">
+      <label>Taux assurance annuel (%)</label>
+      <input type="number" id="loc-assurance" value="0.33" step="0.01" min="0" oninput="onInputLocatif()">
+    </div>
     <div id="loc-tranches-container"></div>
     <button class="btn-add-tranche" onclick="addTrancheLoc()">+ Ajouter un prêt</button>
-    <label>Assurance emprunteur (%) <input type="number" id="loc-assurance" value="0.33" step="0.01" min="0" oninput="onInputLocatif()"></label>
   </div>
 </div>
 
@@ -163,21 +169,52 @@ function renderTranchesLoc() {
   container.innerHTML = tranchesLoc.map((t, i) => {
     const isPrincipal = t.isPrincipal;
     const isPTZ = t.isPTZ;
-    return `
-<div class="tranche-card" id="loc-tranche-${t.id}">
-  <div class="tranche-header">
-    <span class="tranche-label">${t.label}</span>
-    ${!isPrincipal ? `<button onclick="removeTrancheLoc('${t.id}')" title="Supprimer">×</button>` : ''}
+    const delBtn = !isPrincipal && !isPTZ
+      ? `<button class="tranche-del" onclick="removeTrancheLoc('${t.id}')" title="Supprimer">×</button>` : '';
+
+    if (isPrincipal) {
+      return `<div class="tranche-card" id="loc-tranche-${t.id}">
+  <div class="tranche-header"><span class="tranche-label-text">${t.label}</span></div>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Taux (%)</label>
+    <input type="number" value="${t.taux}" min="0" max="30" step="0.01" oninput="updateTrancheLoc('${t.id}','taux',this.value)">
   </div>
-  <div class="tranche-body">
-    ${isPrincipal
-      ? `<div class="tranche-derived">Montant : <span id="loc-tranche-montant-${t.id}">—</span></div>`
-      : `<label>Montant (€) <input type="number" id="loc-tranche-montant-input-${t.id}" value="${t.montant||0}" min="0" oninput="updateTrancheLoc('${t.id}','montant',this.value)"></label>`
-    }
-    ${isPTZ ? '' : `<label>Taux (%) <input type="number" id="loc-tranche-taux-${t.id}" value="${t.taux}" step="0.01" min="0" oninput="updateTrancheLoc('${t.id}','taux',this.value)"></label>`}
-    <label>Durée (ans) <input type="number" id="loc-tranche-duree-${t.id}" value="${t.duree}" min="1" max="30" oninput="updateTrancheLoc('${t.id}','duree',this.value)"></label>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Durée (ans)</label>
+    <input type="number" value="${t.duree}" min="1" max="30" step="1" oninput="updateTrancheLoc('${t.id}','duree',this.value)">
+  </div>
+  <div class="tranche-montant-calc" id="loc-tranche-montant-${t.id}">—<span class="tranche-badge">calculé</span></div>
+</div>`;
+    } else if (isPTZ) {
+      const ptzMens = (t.montant||0) > 0 ? Math.round((t.montant||0)/(t.duree*12)) : 0;
+      return `<div class="tranche-card" id="loc-tranche-${t.id}">
+  <div class="tranche-header"><span class="tranche-label-text">${t.label}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span></div>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Montant (€)</label>
+    <input type="number" value="${t.montant||0}" min="0" step="1000" oninput="updateTrancheLoc('${t.id}','montant',this.value)">
+  </div>
+  <div class="tranche-info" id="loc-tranche-info-${t.id}" style="${ptzMens>0?'':'display:none'}">${ptzMens>0?fmt(ptzMens)+'/mois pendant '+t.duree+' ans · puis libéré':''}</div>
+</div>`;
+    } else {
+      return `<div class="tranche-card" id="loc-tranche-${t.id}">
+  <div class="tranche-header">
+    <input type="text" value="${t.label}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0" oninput="updateTrancheLoc('${t.id}','label',this.value)">
+    ${delBtn}
+  </div>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Taux (%)</label>
+    <input type="number" value="${t.taux}" min="0" max="30" step="0.01" oninput="updateTrancheLoc('${t.id}','taux',this.value)">
+  </div>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Durée (ans)</label>
+    <input type="number" value="${t.duree}" min="1" max="30" step="1" oninput="updateTrancheLoc('${t.id}','duree',this.value)">
+  </div>
+  <div class="sidebar-field" style="margin-bottom:5px">
+    <label>Montant (€)</label>
+    <input type="number" value="${t.montant||0}" min="0" step="1000" oninput="updateTrancheLoc('${t.id}','montant',this.value)">
   </div>
 </div>`;
+    }
   }).join('');
   refreshTranchesLocDerived();
 }
@@ -185,6 +222,7 @@ function renderTranchesLoc() {
 function refreshTranchesLocDerived() {
   const prix     = parseFloat(document.getElementById('loc-prix-projet')?.value) || 0;
   const travaux  = parseFloat(document.getElementById('loc-travaux-total')?.value) || 0;
+  const mobilier = parseFloat(document.getElementById('loc-mobilier')?.value) || 0;
   const notPct   = parseFloat(document.getElementById('loc-notaire')?.value) || 0;
   const agence   = parseFloat(document.getElementById('loc-agence')?.value) || 0;
   const garPct   = parseFloat(document.getElementById('loc-garantie-pct')?.value) || 0;
@@ -193,7 +231,7 @@ function refreshTranchesLocDerived() {
 
   const fraisNotaire  = prix * notPct / 100;
   const fraisGarantie = prix * garPct / 100;
-  const capitalTotal  = prix + travaux + fraisNotaire + agence + fraisGarantie + dossier - apport;
+  const capitalTotal  = prix + travaux + mobilier + fraisNotaire + agence + fraisGarantie + dossier - apport;
   const autresMontant = tranchesLoc.filter(t => !t.isPrincipal).reduce((s, t) => s + (t.montant || 0), 0);
   const principal     = Math.max(0, capitalTotal - autresMontant);
 
@@ -201,13 +239,15 @@ function refreshTranchesLocDerived() {
   if (principalTranche) principalTranche.montant = principal;
 
   const el = document.getElementById(`loc-tranche-montant-principal`);
-  if (el) el.textContent = fmt(principal);
+  if (el) el.innerHTML = `${fmt(principal)}<span class="tranche-badge">calculé</span>`;
 }
 
 function updateTrancheLoc(id, field, value) {
   const t = tranchesLoc.find(t => t.id === id);
-  if (t) t[field] = field === 'montant' || field === 'duree'
-    ? parseInt(value) || 0 : parseFloat(value) || 0;
+  if (!t) return;
+  if (field === 'label') t[field] = value;
+  else if (field === 'duree') t[field] = parseInt(value) || 0;
+  else t[field] = parseFloat(value) || 0;
   refreshTranchesLocDerived();
   onInputLocatif();
 }
@@ -289,8 +329,21 @@ function lireParamsLocatif() {
   };
 }
 
+function selectTypeProjetLocatif(type) {
+  const sel = document.getElementById('loc-type-projet');
+  if (sel) sel.value = type;
+  onTypeChangeLocatif();
+}
+
+function syncTypeSegmentLoc(type) {
+  const seg = document.getElementById('loc-type-segment');
+  if (!seg) return;
+  seg.querySelectorAll('.type-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+}
+
 function onTypeChangeLocatif() {
   const type = document.getElementById('loc-type-projet')?.value || 'ancien';
+  syncTypeSegmentLoc(type);
   const preset = PRESETS_LOC[type] || PRESETS_LOC.ancien;
   const notaireEl = document.getElementById('loc-notaire');
   if (notaireEl) notaireEl.value = preset.notairePct;
@@ -363,7 +416,7 @@ function renderKPIsLocatif(r) {
 <div id="loc-histo-section" class="histo-section">
   <div class="cf-section-title">Répartition annuelle coûts vs loyers</div>
   <div class="histo-horizon-wrapper">
-    <canvas id="loc-chart-histo" height="120"></canvas>
+    <div class="chart-canvas-wrap"><canvas id="loc-chart-histo" height="120"></canvas></div>
     <div class="horizon-panel">
       <div class="horizon-label">Horizon</div>
       <div id="loc-horizon-big">${r.horizonAns} ans</div>
@@ -371,10 +424,11 @@ function renderKPIsLocatif(r) {
   </div>
 </div>
 
-<div id="loc-rendements" class="rendements-grid">
+<div id="loc-rendements" class="rendements-grid rendements-grid--4">
   <div class="rdt-card"><div class="rdt-label">Rendement brut</div><div class="rdt-value">${fmtPct(r.rendementBrut)}</div><div class="rdt-desc">Loyers bruts / coût acquisition</div></div>
   <div class="rdt-card"><div class="rdt-label">Rendement net</div><div class="rdt-value">${fmtPct(r.rendementNet)}</div><div class="rdt-desc">Après charges, avant impôts</div></div>
   <div class="rdt-card"><div class="rdt-label">Rendement net-net</div><div class="rdt-value">${fmtPct(r.rendementNetNet)}</div><div class="rdt-desc">Après charges et fiscalité</div></div>
+  <div class="rdt-card ${r.cashOnCash >= 0 ? '' : 'rdt-card--neg'}"><div class="rdt-label">Cash-on-cash</div><div class="rdt-value ${r.cashOnCash >= 0 ? '' : 'rdt-value--neg'}">${r.cashOnCash >= 0 ? '+' : ''}${fmtPct(r.cashOnCash)}</div><div class="rdt-desc">Cash-flow annuel / apport</div></div>
 </div>
 
 <div id="loc-charts-section" class="charts-section">
@@ -433,7 +487,12 @@ function renderChartsLocatif(r) {
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { font: { size: 10 } } } },
+        plugins: {
+          legend: { labels: { font: { size: 10 } } },
+          tooltip: { callbacks: {
+            label: c => ` ${c.dataset.label} : ${new Intl.NumberFormat('fr-FR').format(Math.round(c.parsed.y))} €`
+          }}
+        },
         scales: {
           x: { stacked: true, ticks: { font: { size: 9 } } },
           y: { stacked: true, beginAtZero: true,
@@ -461,7 +520,12 @@ function renderChartsLocatif(r) {
       },
       options: {
         responsive: true,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            label: c => ` Cash-flow net : ${new Intl.NumberFormat('fr-FR').format(Math.round(c.parsed.y))} €`
+          }}
+        },
         scales: {
           x: { ticks: { font: { size: 9 } } },
           y: { ticks: { font: { size: 9 },
@@ -513,7 +577,12 @@ function renderChartsLocatif(r) {
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { font: { size: 9 } } } },
+        plugins: {
+          legend: { labels: { font: { size: 9 } } },
+          tooltip: { callbacks: {
+            label: c => ` ${c.dataset.label} : ${new Intl.NumberFormat('fr-FR').format(Math.round(c.parsed.y))} €`
+          }}
+        },
         scales: {
           x: { ticks: { font: { size: 9 } } },
           y: { ticks: { font: { size: 9 },
@@ -713,10 +782,79 @@ function renderFiscalDetailLocatif(r, p) {
       },
       options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } },
+          tooltip: { callbacks: {
+            label: c => {
+              const total = c.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = total > 0 ? (c.parsed * 100 / total).toFixed(1) : 0;
+              return ` ${c.label} : ${new Intl.NumberFormat('fr-FR').format(Math.round(c.parsed))} € (${pct} %)`;
+            }
+          }}
+        }
       }
     });
   }
+}
+
+function renderSidebarGroupSummariesLocatif() {
+  function line(key, val) {
+    return `<div class="sg-line"><span class="sg-key">${key ? key + ' ' : ''}</span><span class="sg-val">${val}</span></div>`;
+  }
+  function set(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+  function gn(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+  function gv(id) { return document.getElementById(id)?.value || ''; }
+  function pct(v) { return fmtRaw(v) + ' %'; }
+
+  const typeLabels = { ancien: 'Ancien', neuf: 'Neuf', vefa: 'VEFA' };
+  set('loc-summary-projet',
+    line('Type', typeLabels[gv('loc-type-projet')] || '—') +
+    line('Prix', fmt(gn('loc-prix-projet'))) +
+    line('Apport', fmt(gn('loc-apport')))
+  );
+
+  set('loc-summary-prix',
+    line('Notaire', pct(gn('loc-notaire'))) +
+    line('Agence', fmt(gn('loc-agence'))) +
+    line('Dossier', fmt(gn('loc-dossier')))
+  );
+
+  const travauxTotal = gn('loc-travaux-total');
+  set('loc-summary-travaux', travauxTotal > 0
+    ? line('Travaux', fmt(travauxTotal)) + (gn('loc-mobilier') > 0 ? line('Mobilier', fmt(gn('loc-mobilier'))) : '')
+    : line('', '—')
+  );
+
+  set('loc-summary-emprunts',
+    line('Assurance', pct(gn('loc-assurance'))) +
+    tranchesLoc.map(t =>
+      line(t.label, t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans')
+    ).join('')
+  );
+
+  const differeMois = gn('loc-differe-mois');
+  set('loc-summary-differe', differeMois > 0
+    ? line('Durée', differeMois + ' mois') + line('Type', gv('loc-differe-type') === 'total' ? 'Total' : 'Partiel')
+    : line('', '—')
+  );
+
+  set('loc-summary-revenus',
+    line('Loyer', fmt(gn('loc-loyer')) + '/mois') +
+    line('Vacance', pct(gn('loc-vacance')))
+  );
+
+  set('loc-summary-charges',
+    line('Copro', fmt(gn('loc-charges-copro')) + '/an') +
+    line('Foncière', fmt(gn('loc-taxe-fonciere')) + '/an')
+  );
+
+  const regimeMap = { lmnp_reel: 'LMNP réel', nu_micro: 'Micro-foncier', nu_reel: 'Nu réel' };
+  set('loc-summary-fiscal',
+    line('Régime', regimeMap[gv('loc-regime-fiscal')] || '—') +
+    line('TMI', pct(gn('loc-tmi')))
+  );
+
+  set('loc-summary-valori', line('Appréciation', pct(gn('loc-apprec')) + ' / an'));
 }
 
 function onInputLocatif() {
@@ -724,6 +862,8 @@ function onInputLocatif() {
   const r = calcSimulationLocatif(p);
   if (!r) return;
 
+  refreshTranchesLocDerived();
+  renderSidebarGroupSummariesLocatif();
   renderKPIsLocatif(r);
   renderChartsLocatif(r);
   renderTablesLocatif(r, p);
@@ -741,6 +881,7 @@ function mountLocatif() {
   const panel = document.getElementById('locatif-params-panel');
   if (panel && !panel.querySelector('#loc-group-type')) {
     panel.innerHTML = buildLocatifSidebarHTML();
+    syncTypeSegmentLoc('ancien');
     initTranchesLoc('ancien');
     renderTranchesLoc();
     onRegimeChangeLocatif();

@@ -173,6 +173,10 @@ function calcSimulationLocatif(p) {
     ? rnd((loyerAnnuelNet - chargesAnnuelles) / coutTotalAcquisition * 100) : 0;
   const rendementNetNet  = coutTotalAcquisition > 0
     ? rnd((loyerAnnuelNet - chargesAnnuelles - (fd0.fiscaliteAnnuelle || 0)) / coutTotalAcquisition * 100) : 0;
+  // Cash-on-cash : retour annuel sur capital investi (apport), after ALL costs including loan
+  const cashFlowAnnuel = cashFlowDetail.net * 12;
+  const cashOnCash = (p.apport || 0) > 0
+    ? rnd(cashFlowAnnuel / (p.apport || 1) * 100) : 0;
 
   // ── Intérêts/assurance totaux sur horizon ────────────────────────────────
   const rowsHorizon    = rows.slice(0, horizonAns * 12);
@@ -195,7 +199,7 @@ function calcSimulationLocatif(p) {
     chargesAnnuelles:     Math.round(chargesAnnuelles),
     cashFlowDetail,
     effortEpargne:        Math.max(0, -cashFlowDetail.net),
-    rendementBrut, rendementNet, rendementNetNet,
+    rendementBrut, rendementNet, rendementNetNet, cashOnCash,
     labelsAns, loyersNetsParAn, mensualiteParAn, chargesParAn,
     fiscaliteParAn, cashFlowParAn,
     capitalRestantParAn, capitalRembourseParAn,
