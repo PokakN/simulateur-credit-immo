@@ -221,14 +221,12 @@
     </div><!-- end .app-mode#app-credit -->
 
     <!-- Mode Investissement locatif -->
-    <div id="locatif-mode" style="display:none">
-      <div class="app-layout">
-        <div id="locatif-params-panel" class="params-panel">
-          <!-- injecté par locatif/ui.js → buildLocatifSidebarHTML() -->
-        </div>
-        <div id="locatif-results" class="results-panel">
-          <!-- injecté par locatif/ui.js → renderAllLocatif() -->
-        </div>
+    <div id="locatif-mode" class="app-mode" style="display:none">
+      <div id="locatif-params-panel">
+        <!-- injecté par locatif/ui.js → buildLocatifSidebarHTML() -->
+      </div>
+      <div id="locatif-results" class="content">
+        <!-- injecté par locatif/ui.js → mountLocatif() -->
       </div>
     </div>
 

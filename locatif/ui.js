@@ -732,6 +732,12 @@ function onInputLocatif() {
 }
 
 function mountLocatif() {
+  // Create #loc-results first so renderKPIsLocatif can write to it
+  const resultsPanel = document.getElementById('locatif-results');
+  if (resultsPanel && !document.getElementById('loc-results')) {
+    resultsPanel.innerHTML = '<div id="loc-results"></div>';
+  }
+
   const panel = document.getElementById('locatif-params-panel');
   if (panel && !panel.querySelector('#loc-group-type')) {
     panel.innerHTML = buildLocatifSidebarHTML();
@@ -739,9 +745,6 @@ function mountLocatif() {
     renderTranchesLoc();
     onRegimeChangeLocatif();
   }
-  const results = document.getElementById('locatif-results');
-  if (results && !document.getElementById('loc-results')) {
-    results.innerHTML = '<div id="loc-results"></div>';
-  }
+
   onInputLocatif();
 }
