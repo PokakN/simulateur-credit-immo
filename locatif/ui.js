@@ -620,3 +620,101 @@ function regimeLabel() {
   const map = { lmnp_reel: 'LMNP réel', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue réel' };
   return map[sel?.value] || '';
 }
+
+function renderFiscalDetailLocatif(r, p) {
+  const el = document.getElementById('loc-fiscal-detail-section');
+  if (!el) return;
+
+  const fd = r.fiscalDetail[0];
+  if (!fd) return;
+
+  const regime = p.regimeFiscal;
+  const regimeNames = { lmnp_reel: 'LMNP réel', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue régime réel' };
+
+  const avantageEstime = fd.impots === 0 && fd.baseImposable < 0
+    ? Math.abs(fd.baseImposable) * (p.tmi + 17.2) / 100 : 0;
+
+  const chargesRows = regime === 'nu_micro' ? '' : `
+    <div class="fd-row indent"><span>Intérêts d'emprunt</span><span>−${fmtRaw(fd.interetsDeductibles)}</span></div>
+    <div class="fd-row indent"><span>Assurance emprunteur</span><span>−${fmtRaw(Math.round(p.tranches.reduce((s,t)=>s+(t.montant||0),0) * p.tauxAssurance / 100))}</span></div>
+    <div class="fd-row indent"><span>Charges de copropriété</span><span>−${fmtRaw(p.chargesCopro)}</span></div>
+    <div class="fd-row indent"><span>Taxe foncière</span><span>−${fmtRaw(p.taxeFonciere)}</span></div>
+    <div class="fd-row indent"><span>Assurance PNO</span><span>−${fmtRaw(p.assurancePNO)}</span></div>
+    <div class="fd-row indent"><span>Garantie loyers impayés</span><span>−${fmtRaw(Math.round(p.garantieLoyers/100*r.loyerAnnuelBrut))}</span></div>
+    <div class="fd-row indent"><span>Gestion locative</span><span>−${fmtRaw(Math.round(p.gestionLocative/100*r.loyerAnnuelBrut))}</span></div>
+    <div class="fd-row indent"><span>Entretien</span><span>−${fmtRaw(p.entretien)}</span></div>
+    ${regime === 'lmnp_reel' ? `
+    <div class="fd-row indent"><span>Comptabilité</span><span>−${fmtRaw(p.comptabilite)}</span></div>
+    <div class="fd-row indent"><span>CFE</span><span>−${fmtRaw(p.cfe)}</span></div>
+    <div class="fd-row indent"><span>Amort. bien (${fmtPct(3)} / 33 ans)</span><span>−${fmtRaw(fd.amortissementFiscal - Math.round(p.mobilier*0.20))}</span></div>
+    ${p.mobilier > 0 ? `<div class="fd-row indent"><span>Amort. mobilier (20% / 5 ans)</span><span>−${fmtRaw(Math.round(p.mobilier*0.20))}</span></div>` : ''}
+    ` : ''}
+    ${regime === 'nu_reel' ? `
+    <div class="fd-row indent"><span>Travaux annualisés (÷10)</span><span>−${fmtRaw(Math.round(p.travaux/10))}</span></div>
+    ` : ''}`;
+
+  const microNote = regime === 'nu_micro'
+    ? `<div class="fd-row"><span>Abattement forfaitaire 30 %</span><span>−${fmtRaw(Math.round(r.loyerAnnuelBrut*0.30))}</span></div>` : '';
+
+  el.innerHTML = `
+<div class="section-block">
+  <div class="section-block-title">Fiscalité détaillée — ${regimeNames[regime]} — TMI ${p.tmi} %</div>
+  <div class="fiscal-detail-grid">
+    <div class="fiscal-calc">
+      <div class="fd-row section-row"><span>Revenus</span></div>
+      <div class="fd-row"><span>Loyers bruts annuels</span><span class="pos-amt">+${fmtRaw(r.loyerAnnuelBrut)}</span></div>
+      <div class="fd-row indent"><span>− Vacance locative (${p.vacanceLocative} %)</span><span class="neg-amt">−${fmtRaw(r.loyerAnnuelBrut - r.loyerAnnuelNet)}</span></div>
+      <div class="fd-row"><span>= Loyers nets</span><span style="font-family:var(--font-mono);font-weight:700">${fmtRaw(r.loyerAnnuelNet)}</span></div>
+      ${microNote}
+      <div class="fd-row section-row" style="margin-top:.5rem"><span>Charges déductibles</span></div>
+      ${chargesRows}
+      <div class="fd-row result-row" style="margin-top:.3rem">
+        <span>Base imposable</span>
+        <span style="font-family:var(--font-mono);font-weight:700;color:${fd.baseImposable > 0 ? '#b87020' : 'var(--moss)'}">
+          ${fd.baseImposable > 0 ? '+' : ''}${fmtRaw(fd.baseImposable)}
+        </span>
+      </div>
+      <div class="fd-row"><span>Impôt sur le revenu (${p.tmi} %)</span><span style="font-family:var(--font-mono);font-weight:600;color:${fd.impots>0?'var(--brick)':'var(--moss)'}">${fd.impots > 0 ? fmtRaw(fd.impots) : '0 € ✓'}</span></div>
+      <div class="fd-row"><span>Prélèvements sociaux (17,2 %)</span><span style="font-family:var(--font-mono);font-weight:600">${fmtRaw(fd.prelevementsSociaux)}</span></div>
+      ${avantageEstime > 0 ? `
+      <div class="fd-row avantage-row">
+        <span>Avantage fiscal annuel estimé</span>
+        <span style="font-family:var(--font-mono);font-weight:700;color:var(--moss)">+${fmtRaw(Math.round(avantageEstime))}</span>
+      </div>` : ''}
+    </div>
+    <div class="fiscal-donut-block">
+      <div class="donut-title">Charge annuelle totale</div>
+      <canvas id="loc-chart-donut" height="160"></canvas>
+    </div>
+  </div>
+</div>`;
+
+  const donutCanvas = document.getElementById('loc-chart-donut');
+  if (donutCanvas) {
+    if (locChartDonut) locChartDonut.destroy();
+    locChartDonut = new Chart(donutCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Mensualité', 'Charges récurrentes', 'Impôts + PS', 'Loyers nets'],
+        datasets: [{
+          data: [
+            r.mensualite * 12,
+            r.chargesAnnuelles,
+            fd.fiscaliteAnnuelle,
+            r.loyerAnnuelNet
+          ],
+          backgroundColor: [
+            'rgba(184,64,64,.8)',
+            'rgba(216,160,96,.9)',
+            'rgba(154,138,200,.9)',
+            'rgba(46,122,46,.75)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }
+      }
+    });
+  }
+}

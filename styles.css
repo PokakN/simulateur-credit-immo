@@ -506,3 +506,17 @@
 .annuel-table .cf-pos-cell { color: var(--moss); font-weight: 600; }
 .annuel-table .cf-neg-cell { color: var(--brick); }
 .cliff-note { font-size: .72rem; color: #7a6050; background: #fff8e8; border: 1px solid #e8c878; border-radius: 5px; padding: .5rem .75rem; margin-top: .6rem; }
+
+/* ── Section fiscalité détaillée ── */
+.fiscal-detail-grid { display: grid; grid-template-columns: 1fr 220px; gap: 1rem; align-items: start; }
+.fiscal-calc { font-size: .8rem; }
+.fd-row { display: flex; justify-content: space-between; padding: .22rem 0; border-bottom: 1px dashed var(--parchment-dark); }
+.fd-row:last-child { border-bottom: none; }
+.fd-row.section-row { font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); border-bottom: none; margin-top: .4rem; }
+.fd-row.indent span:first-child { padding-left: .7rem; color: var(--parchment-muted); }
+.fd-row.result-row { font-weight: 700; border-top: 2px solid var(--parchment-dark); margin-top: .3rem; padding-top: .4rem; border-bottom: none; }
+.fd-row.avantage-row { background: #eef4ee; padding: .3rem .5rem; border-radius: 4px; border: 1px solid #7aaa7a; margin-top: .4rem; }
+.pos-amt { font-family: var(--font-mono); font-weight: 600; color: var(--moss); }
+.neg-amt { font-family: var(--font-mono); color: var(--brick); }
+.fiscal-donut-block { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .8rem; }
+.donut-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); margin-bottom: .5rem; text-align: center; }
