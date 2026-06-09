@@ -520,3 +520,9 @@
 .neg-amt { font-family: var(--font-mono); color: var(--brick); }
 .fiscal-donut-block { background: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 6px; padding: .8rem; }
 .donut-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); margin-bottom: .5rem; text-align: center; }
+
+/* ── Mode switcher tabs ── */
+.mode-switcher { display: flex; gap: .5rem; margin: .5rem 0; }
+.mode-tab { background: none; border: 1.5px solid var(--parchment-dark); border-radius: 4px; padding: .35rem .8rem; font-family: var(--font-sans); font-size: .8rem; cursor: pointer; color: var(--ink-muted); }
+.mode-tab.active { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
+.mode-tab:hover:not(.active) { background: var(--parchment-light); }
