@@ -389,3 +389,137 @@ function renderKPIsLocatif(r) {
 <div id="loc-fiscal-detail-section" class="fiscal-detail-section"></div>
 `;
 }
+
+function renderChartsLocatif(r) {
+  // ── Histogramme empilé coûts vs loyers ──────────────────────────────────
+  const histoCanvas = document.getElementById('loc-chart-histo');
+  if (histoCanvas) {
+    if (locChartHisto) locChartHisto.destroy();
+    locChartHisto = new Chart(histoCanvas, {
+      type: 'bar',
+      data: {
+        labels: r.labelsAns,
+        datasets: [
+          {
+            label: 'Mensualité crédit',
+            data: r.mensualiteParAn,
+            backgroundColor: 'rgba(184,64,64,.8)',
+            stack: 'costs'
+          },
+          {
+            label: 'Charges récurrentes',
+            data: r.chargesParAn,
+            backgroundColor: 'rgba(216,160,96,.9)',
+            stack: 'costs'
+          },
+          {
+            label: 'Impôts + PS',
+            data: r.fiscaliteParAn,
+            backgroundColor: 'rgba(154,138,200,.9)',
+            stack: 'costs'
+          },
+          {
+            label: 'Loyer net',
+            data: r.loyersNetsParAn,
+            type: 'line',
+            borderColor: 'rgba(46,122,46,.9)',
+            borderWidth: 2,
+            borderDash: [5, 3],
+            pointRadius: 0,
+            fill: false,
+            order: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { font: { size: 10 } } } },
+        scales: {
+          x: { stacked: true, ticks: { font: { size: 9 } } },
+          y: { stacked: true, beginAtZero: true,
+            ticks: { font: { size: 9 },
+              callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } }
+        }
+      }
+    });
+  }
+
+  // ── Cash-flow annuel (barres) ────────────────────────────────────────────
+  const cfCanvas = document.getElementById('loc-chart-cashflow');
+  if (cfCanvas) {
+    if (locChartCashflow) locChartCashflow.destroy();
+    locChartCashflow = new Chart(cfCanvas, {
+      type: 'bar',
+      data: {
+        labels: r.labelsAns,
+        datasets: [{
+          label: 'Cash-flow net annuel',
+          data: r.cashFlowParAn,
+          backgroundColor: r.cashFlowParAn.map(v => v >= 0
+            ? 'rgba(46,122,46,.8)' : 'rgba(184,64,64,.8)')
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 9 } } },
+          y: { ticks: { font: { size: 9 },
+            callback: v => v >= 1000 || v <= -1000
+              ? (v/1000).toFixed(1)+'k' : v } }
+        }
+      }
+    });
+  }
+
+  // ── Création de patrimoine (lignes + aire) ────────────────────────────────
+  const patCanvas = document.getElementById('loc-chart-patrimoine');
+  if (patCanvas) {
+    if (locChartPatrimoine) locChartPatrimoine.destroy();
+    locChartPatrimoine = new Chart(patCanvas, {
+      type: 'line',
+      data: {
+        labels: r.labelsAns,
+        datasets: [
+          {
+            label: 'Capital restant dû',
+            data: r.capitalRestantParAn,
+            borderColor: 'rgba(184,64,64,.8)',
+            borderWidth: 2, pointRadius: 0, fill: false
+          },
+          {
+            label: 'Capital remboursé',
+            data: r.capitalRembourseParAn,
+            borderColor: 'rgba(154,138,100,.6)',
+            borderWidth: 1.5, pointRadius: 0,
+            fill: 'origin',
+            backgroundColor: 'rgba(200,185,154,.15)'
+          },
+          {
+            label: 'Valeur du bien',
+            data: r.valeurBienParAn,
+            borderColor: 'rgba(46,122,46,.85)',
+            borderWidth: 2, pointRadius: 0, fill: false
+          },
+          {
+            label: 'Patrimoine net',
+            data: r.patrimoineNetParAn,
+            borderColor: 'rgba(46,122,46,.4)',
+            borderWidth: 1.5, pointRadius: 0,
+            fill: 'origin',
+            backgroundColor: 'rgba(46,122,46,.08)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { font: { size: 9 } } } },
+        scales: {
+          x: { ticks: { font: { size: 9 } } },
+          y: { ticks: { font: { size: 9 },
+            callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+'€' } }
+        }
+      }
+    });
+  }
+}
