@@ -681,11 +681,17 @@ function toggleGraphiqueMode(mode) {
   function renderDonut(res) {
   const ctx = document.getElementById('chart-donut').getContext('2d');
   const pA = lireParams('a');
-  const capitalTotal = res.amortissement.reduce((s, r) => s + r.capital, 0);
+  const capitalTotal = res.amortissement.reduce((s, r) => s + r.capital, 0)
+    - (res.interetsCapitalises || 0);
   const fraisTotal = res.fraisNotaire + pA.fraisDossier + pA.fraisGarantie;
 
   const labels = ['Capital', 'Intérêts', 'Assurance', 'Frais'];
-  const values = [Math.round(capitalTotal), res.interetsTotaux, res.assuranceTotale, Math.round(fraisTotal)];
+  const values = [
+    Math.round(capitalTotal),
+    res.interetsTotaux + (res.interetsCapitalises || 0),
+    res.assuranceTotale,
+    Math.round(fraisTotal)
+  ];
   const colors = ['#5b80a8', '#b1503f', '#c1652f', '#71956b'];
   if (pA.travaux > 0) {
     labels.push('Travaux');

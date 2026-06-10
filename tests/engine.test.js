@@ -113,6 +113,22 @@ test('Valorisation : valeurBien croît avec tauxApprec', () => {
   assertClose(rows[rows.length - 1].valeurBien, 200000 * Math.pow(1.02, 20), 100, 'valeurBien an 20');
 });
 
+test('Différé total : intérêts capitalisés exposés et inclus dans coutCredit', () => {
+  const p = {
+    prixProjet: 200000, apport: 30000, tauxAssurance: 0,
+    differeMois: 12, differeType: 'total',
+    valeurBien: 200000, tauxApprec: 0,
+    fraisNotaire: 0, fraisNotairePct: 0, fraisDossier: 0, fraisGarantie: 0,
+    travaux: 0, ptzMontant: 0, ptzDuree: 0, duree: 20,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 170000 }]
+  };
+  const res = calcSimulation(p);
+  const attendu = 170000 * (Math.pow(1 + 0.035 / 12, 12) - 1); // ≈ 6 047 €
+  assertClose(res.interetsCapitalises, attendu, 20, 'intérêts capitalisés');
+  assertClose(res.coutCredit,
+    res.interetsTotaux + res.assuranceTotale + res.interetsCapitalises, 2, 'coutCredit');
+});
+
 // ── Budget balance (locatif) ──────────────────────────────────────────────────
 console.log('\nBudget locatif — apport + emprunts = coût acquisition');
 

@@ -40,7 +40,12 @@
         if (inDiffere) {
           const intDiff = cr * tt;
           if (differeType === 'total') cr *= (1 + tt);
-          return { cap: 0, int: inDiffere && differeType === 'partiel' ? intDiff : 0, cr, ptz: 0, mens: 0, inDiffere: true };
+          return {
+            cap: 0,
+            int: differeType === 'partiel' ? intDiff : 0,
+            intCapitalise: differeType === 'total' ? intDiff : 0,
+            cr, ptz: 0, mens: 0, inDiffere: true
+          };
         }
         if (mois > nn || cr <= 0) return { cap: 0, int: 0, cr: 0, ptz: 0, mens: 0 };
 
@@ -64,6 +69,7 @@
       let sumCap = 0, sumInt = 0, sumCR = 0, sumPTZ = 0, sumMens = 0;
       let enDiffere = false;
       let differeInt = 0;
+      let sumIntCap = 0;
 
       trancheSchedules.forEach((sched, j) => {
         const r = sched[i];
@@ -71,6 +77,7 @@
         sumInt += r.int;
         sumCR  += r.cr;
         sumPTZ += r.ptz;
+        sumIntCap += r.intCapitalise || 0;
         if (r.inDiffere) { enDiffere = true; differeInt += r.int; }
         else if (r.mens > 0) sumMens += r.mens;
       });
@@ -86,6 +93,7 @@
         mensualite: mensualiteLigne,
         capital: sumCap,
         interets: sumInt,
+        interetsCapitalises: sumIntCap,
         assurance: assuranceMensuelle,
         ptz: sumPTZ,
         capitalRestant: sumCR,
@@ -101,12 +109,13 @@
 
     const interetsTotaux = rows.reduce((s, r) => s + r.interets, 0);
     const assuranceTotale = rows.reduce((s, r) => s + r.assurance, 0);
+    const interetsCapitalises = rows.reduce((s, r) => s + (r.interetsCapitalises || 0), 0);
     const fraisNotaire = p.fraisNotaire;   // déjà calculé dans lireParams
-    const coutCredit = interetsTotaux + assuranceTotale;
+    const coutCredit = interetsTotaux + assuranceTotale + interetsCapitalises;
     // total dépensé = prix d'acquisition + coût du financement
     const coutTotalOperation = (p.prixProjet || p.capital) + (p.travaux || 0)
       + p.fraisNotaire + p.fraisDossier + p.fraisGarantie
-      + interetsTotaux + assuranceTotale;
+      + interetsTotaux + assuranceTotale + interetsCapitalises;
 
     // Mensualité post-différé (première ligne hors période de différé)
     const postDiffereRow = rows[p.differeMois] || rows[0];
@@ -185,6 +194,7 @@
       ptzMensualiteM,
       mensualiteAssurance: Math.round(mensualiteAssurance),
       interetsTotaux: Math.round(interetsTotaux),
+      interetsCapitalises: Math.round(interetsCapitalises),
       assuranceTotale: Math.round(assuranceTotale),
       fraisNotaire: Math.round(fraisNotaire),
       coutCredit: Math.round(coutCredit),
