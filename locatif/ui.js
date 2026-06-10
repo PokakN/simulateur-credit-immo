@@ -812,8 +812,7 @@ function renderFiscalDetailLocatif(r, p) {
       <div class="fd-row indent"><span>− Vacance locative (${p.vacanceLocative} %)</span><span class="neg-amt">−${fmtRaw(r.loyerAnnuelBrut - r.loyerAnnuelNet)}</span></div>
       <div class="fd-row"><span>= Loyers nets</span><span style="font-family:var(--font-mono);font-weight:700">${fmtRaw(r.loyerAnnuelNet)}</span></div>
       ${microNote}
-      <div class="fd-row section-row" style="margin-top:.5rem"><span>Charges déductibles</span></div>
-      ${chargesRows}
+      ${chargesRows ? `<div class="fd-row section-row" style="margin-top:.5rem"><span>Charges déductibles</span></div>${chargesRows}` : ''}
       <div class="fd-row result-row" style="margin-top:.3rem">
         <span>Base imposable</span>
         <span style="font-family:var(--font-mono);font-weight:700;color:${fd.baseImposable > 0 ? 'var(--rust)' : 'var(--sage)'}">
