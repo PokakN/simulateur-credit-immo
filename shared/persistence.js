@@ -289,9 +289,9 @@ function renderProjetsList() {
       <div class="projet-card-kpi"><span class="projet-mode-badge projet-mode-${p.mode || 'credit'}">${p.mode === 'locatif' ? 'Locatif' : 'Crédit'}</span>${fmt(p.mensualite)}/mois · ${p.date}</div>
       ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${safeUrl(p.urlAnnonce)}" target="_blank" rel="noopener">→ ${esc(p.urlAnnonce)}</a></div>` : ''}
       <div class="projet-card-actions">
-        <button onclick="chargerProjet('${p.id}')">Charger</button>
-        <button onclick="mettreAJourProjet('${p.id}')">Mettre à jour</button>
-        <button onclick="supprimerProjet('${p.id}')" style="color:var(--brick);border-color:var(--brick)">Suppr.</button>
+        <button onclick="chargerProjet('${esc(p.id)}')">Charger</button>
+        <button onclick="mettreAJourProjet('${esc(p.id)}')">Mettre à jour</button>
+        <button onclick="supprimerProjet('${esc(p.id)}')" style="color:var(--brick);border-color:var(--brick)">Suppr.</button>
       </div>
     </div>`).join('');
 }
