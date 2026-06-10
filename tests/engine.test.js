@@ -249,13 +249,56 @@ test('LMNP réel : base imposable négative si amortissements couvrent loyers', 
   assert(r.fiscalDetail[0].impots === 0, 'impôts doivent être 0 si base négative');
 });
 
-test('nu_micro : abattement 30 % — base = (loyer + charges récup) × 12 × 0.70', () => {
+test('nu_micro : abattement 30 % sur loyers HC nets de vacance', () => {
   const p = makeLocParams({ regimeFiscal: 'nu_micro' });
   const r = calcSimulationLocatif(p);
-  // loyerAnnuelBrut includes chargesRecuperables (default 0 in makeLocParams)
-  const loyerBrut = (p.loyerMensuel + (p.chargesRecuperables || 0)) * 12;
-  const expectedBase = Math.round(loyerBrut * 0.70);
-  assertClose(r.fiscalDetail[0].baseImposable, expectedBase, 1, 'base imposable micro');
+  // Micro-foncier : charges récupérables exclues des recettes, vacance déduite
+  const expectedBase = Math.round(p.loyerMensuel * 12 * (1 - p.vacanceLocative / 100) * 0.70);
+  assertClose(r.fiscalDetail[0].baseImposable, expectedBase, 1, 'base imposable micro'); // 900×12×0,92×0,70 = 6 955
+});
+
+console.log('\nFiscalité — refonte régimes');
+
+test('LMNP réel : l\'amortissement ne crée pas de déficit (art. 39 C) et se reporte', () => {
+  // Pas d'emprunt : seul l'amortissement (2 M€ × 85 % × 3 % = 51 000 €) pourrait
+  // rendre la base négative ; il doit être plafonné à la base avant amortissement.
+  const p = makeLocParams({
+    prixProjet: 2000000, loyerMensuel: 2000, chargesRecuperables: 0,
+    vacanceLocative: 0, tauxAssurance: 0,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 0 }]
+  });
+  const r = calcSimulationLocatif(p);
+  // loyers nets 24 000 − charges 5 730 = 18 270 ; amort utilisé = 18 270 → base 0
+  assert(r.fiscalDetail[0].baseImposable === 0, `base devrait être 0, obtenu ${r.fiscalDetail[0].baseImposable}`);
+  assert(r.fiscalDetail[0].impots === 0, 'impôts doivent être 0');
+  assertClose(r.fiscalDetail[0].amortissementReporte, 51000 - 18270, 5, 'report 39 C an 1');
+  assert(r.fiscalDetail[1].amortissementReporte > r.fiscalDetail[0].amortissementReporte,
+    'le report doit s\'accumuler d\'une année sur l\'autre');
+});
+
+test('LMNP micro-BIC : abattement 50 % sur recettes nettes de vacance', () => {
+  const p = makeLocParams({ regimeFiscal: 'lmnp_micro' });
+  const r = calcSimulationLocatif(p);
+  const expectedBase = Math.round((p.loyerMensuel + p.chargesRecuperables) * 12 * (1 - p.vacanceLocative / 100) * 0.50);
+  assertClose(r.fiscalDetail[0].baseImposable, expectedBase, 1, 'base micro-BIC'); // ≈ 5 410
+});
+
+test('nu_reel : travaux déduits à 100 % l\'année 1, déficit imputable plafonné à 10 700 €', () => {
+  const p = makeLocParams({ regimeFiscal: 'nu_reel', travaux: 50000,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 194000 }] });
+  const r = calcSimulationLocatif(p);
+  // An 1 : gros déficit → imputation max 10 700 € sur le revenu global → économie 10 700 × 30 % = 3 210 €
+  assertClose(r.fiscalDetail[0].fiscaliteAnnuelle, -3210, 5, 'économie d\'impôt an 1');
+  assert(r.fiscalDetail[0].deficitFoncierReporte > 35000,
+    `l'excédent de déficit doit être reporté (obtenu ${r.fiscalDetail[0].deficitFoncierReporte})`);
+  assert(r.fiscalDetail[1].fiscaliteAnnuelle > r.fiscalDetail[0].fiscaliteAnnuelle,
+    'la fiscalité an 2 (sans travaux) doit être supérieure à l\'an 1');
+});
+
+test('nu_micro : flag plafond 15 000 € exposé', () => {
+  const p = makeLocParams({ regimeFiscal: 'nu_micro', loyerMensuel: 1500, vacanceLocative: 0 });
+  const r = calcSimulationLocatif(p);
+  assert(r.plafondMicroFoncierDepasse === true, '18 000 € de loyers HC > 15 000 € → flag attendu');
 });
 
 // ── Charges récupérables ──────────────────────────────────────────────────────
@@ -277,13 +320,13 @@ test('chargesRecuperables améliore le cash-flow', () => {
   assert(r1.cashFlowDetail.net > r0.cashFlowDetail.net, 'cash-flow ne s\'améliore pas');
 });
 
-test('chargesRecuperables affecte la base imposable nu_micro', () => {
+test('chargesRecuperables n\'affecte PAS la base imposable nu_micro', () => {
   const p0 = makeLocParams({ regimeFiscal: 'nu_micro', chargesRecuperables: 0 });
   const p1 = makeLocParams({ regimeFiscal: 'nu_micro', chargesRecuperables: 100 });
   const r0 = calcSimulationLocatif(p0);
   const r1 = calcSimulationLocatif(p1);
-  assert(r1.fiscalDetail[0].baseImposable > r0.fiscalDetail[0].baseImposable,
-    'base imposable micro ne change pas avec charges récup');
+  assert(r1.fiscalDetail[0].baseImposable === r0.fiscalDetail[0].baseImposable,
+    'les provisions pour charges ne sont pas des recettes micro-foncier');
 });
 
 // ── calcTAEG ──────────────────────────────────────────────────────────────────

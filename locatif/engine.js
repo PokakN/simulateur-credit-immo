@@ -1,47 +1,97 @@
 // Moteur de calcul du simulateur d'investissement locatif.
 // Dépend de : shared/calc-utils.js (calcMensualite, calcTAEG), credit/engine.js (calcAmortissement)
 
+// regime ∈ { 'lmnp_reel', 'lmnp_micro', 'nu_micro', 'nu_reel' }
 function calcFiscaliteLocatif(regime, base) {
   const {
-    loyerAnnuelNet, loyerAnnuelBrut,
+    loyerAnnuelNet,           // loyers + charges récupérables, nets de vacance
+    loyerHCAnnuelNet,         // loyers hors charges, nets de vacance (recettes micro-foncier)
     interetsAnnee, assuranceAnnee,
     chargesCopro, taxeFonciere, assurancePNO,
     garantieLoyersEur, gestionLocativeEur, entretien,
-    comptabilite, cfe, travauxAnnualises,
+    comptabilite, cfe, travauxAnnee,
     amortissementBien, amortissementMobilier,
+    reportAmortissement = 0,  // amortissements LMNP non imputés (art. 39 C), report illimité
+    reportDeficitFoncier = 0, // déficit foncier reporté (simplification : pas de péremption 10 ans)
     tmi
   } = base;
 
-  let baseImposable, impots, prelevementsSociaux;
+  const PS = 0.172;
+  let baseImposable = 0, impots = 0, prelevementsSociaux = 0;
+  let amortissementReporte = reportAmortissement;
+  let deficitReportable = reportDeficitFoncier;
+  let economieImpotGlobal = 0; // déficit foncier imputé sur le revenu global (≤ 10 700 €/an)
 
   if (regime === 'nu_micro') {
-    baseImposable = loyerAnnuelBrut * 0.70;
+    // Micro-foncier : abattement forfaitaire 30 % sur les loyers HC encaissés.
+    // Les provisions pour charges récupérables ne sont pas des recettes.
+    baseImposable = loyerHCAnnuelNet * 0.70;
     impots = baseImposable * tmi / 100;
-    prelevementsSociaux = baseImposable * 0.172;
-  } else {
-    let chargesDeductibles = interetsAnnee + assuranceAnnee
+    prelevementsSociaux = baseImposable * PS;
+
+  } else if (regime === 'lmnp_micro') {
+    // Micro-BIC meublé : abattement forfaitaire 50 % sur les recettes
+    // (loyers charges comprises) effectivement encaissées.
+    baseImposable = loyerAnnuelNet * 0.50;
+    impots = baseImposable * tmi / 100;
+    prelevementsSociaux = baseImposable * PS;
+
+  } else if (regime === 'lmnp_reel') {
+    const chargesHorsAmort = interetsAnnee + assuranceAnnee
       + chargesCopro + taxeFonciere + assurancePNO
-      + garantieLoyersEur + gestionLocativeEur + entretien;
-
-    if (regime === 'lmnp_reel') {
-      chargesDeductibles += comptabilite + cfe
-        + amortissementBien + amortissementMobilier;
-      baseImposable = loyerAnnuelNet - chargesDeductibles;
-    } else { // nu_reel
-      chargesDeductibles += travauxAnnualises;
-      baseImposable = loyerAnnuelNet - chargesDeductibles;
-    }
-
+      + garantieLoyersEur + gestionLocativeEur + entretien
+      + comptabilite + cfe;
+    const baseAvantAmort = loyerAnnuelNet - chargesHorsAmort;
+    // Art. 39 C CGI : l'amortissement ne peut pas créer ni aggraver un déficit
+    // BIC non professionnel. L'excédent se reporte sans limite de durée.
+    const amortDisponible = amortissementBien + amortissementMobilier + reportAmortissement;
+    const amortUtilise = Math.max(0, Math.min(baseAvantAmort, amortDisponible));
+    amortissementReporte = amortDisponible - amortUtilise;
+    baseImposable = baseAvantAmort - amortUtilise;
     const baseTaxable = Math.max(0, baseImposable);
     impots = baseTaxable * tmi / 100;
-    prelevementsSociaux = baseTaxable * 0.172;
+    prelevementsSociaux = baseTaxable * PS;
+
+  } else { // nu_reel
+    const chargesHorsInterets = chargesCopro + taxeFonciere + assurancePNO
+      + garantieLoyersEur + gestionLocativeEur + entretien + travauxAnnee;
+    const interets = interetsAnnee + assuranceAnnee;
+    // Les intérêts d'emprunt ne s'imputent que sur les revenus fonciers ;
+    // le déficit issu des autres charges est imputable sur le revenu global
+    // dans la limite de 10 700 €/an, l'excédent est reporté sur 10 ans
+    // (simplification : pas de suivi de péremption).
+    const apresInterets = loyerAnnuelNet - interets;
+    if (apresInterets < 0) {
+      const imputable = Math.min(10700, chargesHorsInterets);
+      economieImpotGlobal = imputable * tmi / 100;
+      deficitReportable += (-apresInterets) + (chargesHorsInterets - imputable);
+      baseImposable = apresInterets - chargesHorsInterets; // négatif, pour affichage
+    } else {
+      let solde = apresInterets - chargesHorsInterets;
+      if (solde >= 0) {
+        const consomme = Math.min(solde, reportDeficitFoncier);
+        deficitReportable = reportDeficitFoncier - consomme;
+        solde -= consomme;
+        baseImposable = solde;
+        impots = solde * tmi / 100;
+        prelevementsSociaux = solde * PS;
+      } else {
+        const imputable = Math.min(10700, -solde);
+        economieImpotGlobal = imputable * tmi / 100;
+        deficitReportable += (-solde) - imputable;
+        baseImposable = solde; // négatif, pour affichage
+      }
+    }
   }
 
   return {
     baseImposable: Math.round(baseImposable),
     impots: Math.round(impots),
     prelevementsSociaux: Math.round(prelevementsSociaux),
-    fiscaliteAnnuelle: Math.round(impots + prelevementsSociaux)
+    economieImpotGlobal: Math.round(economieImpotGlobal),
+    fiscaliteAnnuelle: Math.round(impots + prelevementsSociaux - economieImpotGlobal),
+    amortissementReporte: Math.round(amortissementReporte),
+    deficitFoncierReporte: Math.round(deficitReportable)
   };
 }
 
@@ -83,26 +133,28 @@ function calcSimulationLocatif(p) {
   // Les charges récupérables reçues sont déjà compensées par chargesCopro côté dépenses.
   const loyerAnnuelBrut = ((p.loyerMensuel || 0) + (p.chargesRecuperables || 0)) * 12;
   const loyerAnnuelNet  = loyerAnnuelBrut * (1 - (p.vacanceLocative || 0) / 100);
+  const loyerHCAnnuelNet = (p.loyerMensuel || 0) * 12 * (1 - (p.vacanceLocative || 0) / 100);
 
   // ── Charges annuelles ────────────────────────────────────────────────────
   const garantieLoyersEur  = (p.garantieLoyers || 0) / 100 * loyerAnnuelBrut;
   const gestionLocativeEur = (p.gestionLocative || 0) / 100 * loyerAnnuelBrut;
   let chargesAnnuelles = (p.chargesCopro || 0) + (p.taxeFonciere || 0)
     + (p.assurancePNO || 0) + garantieLoyersEur + gestionLocativeEur + (p.entretien || 0);
-  if (p.regimeFiscal === 'lmnp_reel') {
-    chargesAnnuelles += (p.comptabilite || 0) + (p.cfe || 0);
-  }
+  if (p.regimeFiscal === 'lmnp_reel') chargesAnnuelles += (p.comptabilite || 0);
+  if (p.regimeFiscal === 'lmnp_reel' || p.regimeFiscal === 'lmnp_micro') chargesAnnuelles += (p.cfe || 0);
 
   // ── Amortissements fiscaux ───────────────────────────────────────────────
   // Terrain forfaitaire 15% du prix, bien amortissable à 3%/an
   const amortissementBien = p.regimeFiscal === 'lmnp_reel'
     ? Math.round((p.prixProjet || 0) * 0.85 * 0.03) : 0;
-  const travauxAnnualises = (p.travaux || 0) / 10; // nu_reel : travaux annualisés 10 ans
   const assuranceMensuelle = totalBorrowed * (p.tauxAssurance || 0) / 12 / 100;
 
   // ── Détail fiscal annuel ─────────────────────────────────────────────────
   const horizonAns = requestedHorizon;
   const fiscalDetail = [];
+
+  let reportAmortissement = 0;
+  let reportDeficitFoncier = 0;
 
   for (let an = 1; an <= horizonAns; an++) {
     const anRows = rows.filter(r => r.annee === an);
@@ -114,8 +166,10 @@ function calcSimulationLocatif(p) {
       ? (p.mobilier || 0) * 0.20 : 0;
     const amortissementFiscal = amortissementBien + amortissementMobilier;
 
+    const travauxAnnee = (an === 1) ? (p.travaux || 0) : 0; // nu_reel : déduits l'année des dépenses
+
     const fiscal = calcFiscaliteLocatif(p.regimeFiscal || 'lmnp_reel', {
-      loyerAnnuelNet, loyerAnnuelBrut,
+      loyerAnnuelNet, loyerHCAnnuelNet,
       interetsAnnee, assuranceAnnee,
       chargesCopro: p.chargesCopro || 0,
       taxeFonciere: p.taxeFonciere || 0,
@@ -124,11 +178,14 @@ function calcSimulationLocatif(p) {
       entretien: p.entretien || 0,
       comptabilite: p.comptabilite || 0,
       cfe: p.cfe || 0,
-      travauxAnnualises,
+      travauxAnnee,
       amortissementBien,
       amortissementMobilier,
+      reportAmortissement, reportDeficitFoncier,
       tmi: p.tmi || 0
     });
+    reportAmortissement  = fiscal.amortissementReporte;
+    reportDeficitFoncier = fiscal.deficitFoncierReporte;
 
     const mensualiteAn  = anRows.reduce((s, r) => s + r.mensualite, 0);
     const cashFlowNet   = loyerAnnuelNet - mensualiteAn - chargesAnnuelles - fiscal.fiscaliteAnnuelle;
@@ -144,6 +201,9 @@ function calcSimulationLocatif(p) {
       impots:               fiscal.impots,
       prelevementsSociaux:  fiscal.prelevementsSociaux,
       fiscaliteAnnuelle:    fiscal.fiscaliteAnnuelle,
+      economieImpotGlobal:  fiscal.economieImpotGlobal,
+      amortissementReporte: fiscal.amortissementReporte,
+      deficitFoncierReporte: fiscal.deficitFoncierReporte,
       cashFlowNet:          Math.round(cashFlowNet)
     });
   }
@@ -217,6 +277,9 @@ function calcSimulationLocatif(p) {
     amortissement:        rows,
     loyerAnnuelBrut:      Math.round(loyerAnnuelBrut),
     loyerAnnuelNet:       Math.round(loyerAnnuelNet),
+    loyerHCAnnuelNet:     Math.round(loyerHCAnnuelNet),
+    plafondMicroFoncierDepasse: (p.regimeFiscal === 'nu_micro') && loyerHCAnnuelNet > 15000,
+    plafondMicroBICDepasse:     (p.regimeFiscal === 'lmnp_micro') && loyerAnnuelNet > 77700,
     chargesAnnuelles:     Math.round(chargesAnnuelles),
     cashFlowDetail,
     effortEpargne:        Math.max(0, -cashFlowDetail.net),
