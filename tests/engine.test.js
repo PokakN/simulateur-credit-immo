@@ -303,6 +303,21 @@ test('TAEG : les frais de dossier/garantie financés augmentent le TAEG', () => 
     `TAEG avec 4 000 € de frais (${avec.taeg}) devrait dépasser nettement ${sans.taeg}`);
 });
 
+test('TAEG locatif : les frais de dossier/garantie financés augmentent le TAEG', () => {
+  const sans = makeLocParams({
+    fraisDossier: 0, fraisGarantie: 0,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 170000 }]
+  });
+  const avec = makeLocParams({
+    fraisDossier: 1000, fraisGarantie: 3000,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 170000 }]
+  });
+  const resSans = calcSimulationLocatif(sans);
+  const resAvec = calcSimulationLocatif(avec);
+  assert(resAvec.taeg > resSans.taeg + 0.1,
+    `TAEG locatif avec frais (${resAvec.taeg}) devrait dépasser ${resSans.taeg} + 0.1`);
+});
+
 // ── Résumé ────────────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(50)}`);
 console.log(`Résultats : ${passed} ✅  ${failed} ❌  (${passed + failed} tests)`);

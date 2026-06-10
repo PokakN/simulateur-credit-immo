@@ -69,6 +69,8 @@ function calcSimulationLocatif(p) {
   const totalBorrowed = (p.tranches || []).reduce((s, t) => s + (t.montant || 0), 0) || p.capital || 0;
   const postDiffereRow = rows[p.differeMois] || rows[0];
   const mensualite = postDiffereRow.mensualite;
+  // Les lignes étendues au-delà du prêt ont mensualite = 0 : leur contribution
+  // à la somme actualisée est nulle, donc le résultat du TAEG est inchangé.
   const capitalNetTAEG = Math.max(1, totalBorrowed - (p.fraisDossier || 0) - (p.fraisGarantie || 0));
   const taeg = calcTAEG(capitalNetTAEG, rows);
 
