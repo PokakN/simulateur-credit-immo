@@ -680,7 +680,7 @@ function renderTablesLocatif(r, p) {
     <tbody>
       <tr><td>Apport personnel</td><td>${fmt(p.apport)}</td></tr>
       ${p.tranches.map(t => `
-        <tr><td>${t.label} (${fmtPct(t.taux)} / ${t.duree} ans)</td><td>${fmt(t.montant || 0)}</td></tr>
+        <tr><td>${esc(t.label)} (${fmtPct(t.taux)} / ${t.duree} ans)</td><td>${fmt(t.montant || 0)}</td></tr>
         <tr class="sub"><td>Mensualité</td><td>${fmt(calcMensualite(t.montant || 0, t.taux, t.duree))}/mois</td></tr>
       `).join('')}
       <tr class="total"><td>Total emprunté</td><td>${fmt(p.tranches.reduce((s,t) => s+(t.montant||0), 0))}</td></tr>
@@ -830,7 +830,7 @@ function renderFiscalDetailLocatif(r, p) {
           data: [
             r.mensualite * 12,
             r.chargesAnnuelles,
-            fd.fiscaliteAnnuelle,
+            Math.max(0, fd.fiscaliteAnnuelle),
             r.loyerAnnuelNet
           ],
           backgroundColor: [
@@ -889,7 +889,7 @@ function renderSidebarGroupSummariesLocatif() {
   set('loc-summary-emprunts',
     line('Assurance', pct(gn('loc-assurance'))) +
     tranchesLoc.map(t =>
-      line(t.label, pct(t.taux) + ' — ' + t.duree + ' ans')
+      line(esc(t.label), pct(t.taux) + ' — ' + t.duree + ' ans')
     ).join('')
   );
 

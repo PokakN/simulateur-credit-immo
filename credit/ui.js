@@ -424,7 +424,7 @@
     set(p + '-summary-emprunts',
       line('Assurance', pct(gn('assurance'))) +
       tranches.map(function(t) {
-        return line(t.label, t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans');
+        return line(esc(t.label), t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans');
       }).join('')
     );
 
@@ -773,7 +773,7 @@ function toggleGraphiqueMode(mode) {
     const totalEmprunte = tranches.reduce((s, t) => s + (t.montant || 0), 0);
     const totalProjet = p.apport + totalEmprunte;
     const rows = tranches.map(t => `<tr>
-      <td>${t.label}</td>
+      <td>${esc(t.label)}</td>
       <td>${t.isPTZ ? '0 % (PTZ)' : fmtPct(t.taux)}</td>
       <td>${t.duree} ans</td>
       <td>${fmt(t.montant || 0)}</td>
