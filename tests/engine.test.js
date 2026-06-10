@@ -287,6 +287,22 @@ test('TAEG = taux nominal si assurance = 0 et frais = 0', () => {
   assertClose(taeg, 3.5, 0.1, 'TAEG sans frais');
 });
 
+test('TAEG : les frais de dossier/garantie financés augmentent le TAEG', () => {
+  const base = {
+    prixProjet: 200000, apport: 30000, tauxAssurance: 0,
+    differeMois: 0, differeType: 'partiel',
+    valeurBien: 200000, tauxApprec: 0,
+    fraisNotaire: 0, fraisNotairePct: 0, fraisDossier: 0, fraisGarantie: 0,
+    travaux: 0, ptzMontant: 0, ptzDuree: 0, duree: 20,
+    tranches: [{ id: 'principal', isPrincipal: true, isPTZ: false, taux: 3.5, duree: 20, montant: 170000 }]
+  };
+  const sans = calcSimulation({ ...base });
+  const avec = calcSimulation({ ...base, fraisDossier: 1000, fraisGarantie: 3000 });
+  assertClose(sans.taeg, 3.5, 0.1, 'TAEG sans frais');
+  assert(avec.taeg > sans.taeg + 0.1,
+    `TAEG avec 4 000 € de frais (${avec.taeg}) devrait dépasser nettement ${sans.taeg}`);
+});
+
 // ── Résumé ────────────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(50)}`);
 console.log(`Résultats : ${passed} ✅  ${failed} ❌  (${passed + failed} tests)`);

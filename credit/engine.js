@@ -125,10 +125,13 @@
     const valeurBienTerme = p.valeurBien * Math.pow(1 + p.tauxApprec / 100, p.duree);
     const plusValueNette = valeurBienTerme - coutTotalOperation;
 
-    // Les frais (notaire, dossier, garantie) sont financés dans le capital emprunté
-    // et déjà amortis via les mensualités : la base actuarielle du TAEG est donc
-    // le capital total débloqué, sans nouvelle déduction (sinon double comptage).
-    const taeg = calcTAEG(Math.max(totalBorrowed, 1), rows);
+    // TAEG réglementaire : on actualise les mensualités contre le montant
+    // effectivement mis à disposition de l'emprunteur. Les frais de dossier et
+    // de garantie sont des coûts du crédit (même financés) : ils se déduisent
+    // de la base actuarielle, ce qui augmente le TAEG. Les frais de notaire
+    // (frais d'acquisition, pas de financement) restent exclus.
+    const capitalNetTAEG = Math.max(1, totalBorrowed - (p.fraisDossier || 0) - (p.fraisGarantie || 0));
+    const taeg = calcTAEG(capitalNetTAEG, rows);
 
     // Données graphique principal (mensuel)
     const capitalRestantParMois = rows.map(r => Math.round(r.capitalRestant));

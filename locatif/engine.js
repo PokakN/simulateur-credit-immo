@@ -49,11 +49,28 @@ function calcSimulationLocatif(p) {
   const rows = calcAmortissement(p);
   if (!rows.length) return null;
 
+  // Extend rows beyond the loan term if horizon exceeds it (post-payoff years)
+  const requestedHorizon = Math.max(1, Math.min(p.horizonAns || p.duree || 20, 30));
+  if (rows.length < requestedHorizon * 12) {
+    const valBienBase = p.valeurBien || p.prixProjet || 0;
+    const tauxApprec  = p.tauxApprec || 0;
+    for (let i = rows.length; i < requestedHorizon * 12; i++) {
+      const mois = i + 1;
+      rows.push({
+        mois, annee: Math.ceil(mois / 12),
+        mensualite: 0, capital: 0, interets: 0,
+        assurance: 0, ptz: 0, capitalRestant: 0,
+        valeurBien: valBienBase * Math.pow(1 + tauxApprec / 100, mois / 12)
+      });
+    }
+  }
+
   // ── Financement ──────────────────────────────────────────────────────────
   const totalBorrowed = (p.tranches || []).reduce((s, t) => s + (t.montant || 0), 0) || p.capital || 0;
   const postDiffereRow = rows[p.differeMois] || rows[0];
   const mensualite = postDiffereRow.mensualite;
-  const taeg = calcTAEG(Math.max(totalBorrowed, 1), rows);
+  const capitalNetTAEG = Math.max(1, totalBorrowed - (p.fraisDossier || 0) - (p.fraisGarantie || 0));
+  const taeg = calcTAEG(capitalNetTAEG, rows);
 
   const coutTotalAcquisition = (p.prixProjet || 0) + (p.travaux || 0) + (p.mobilier || 0)
     + (p.fraisNotaire || 0) + (p.fraisAgence || 0)
@@ -82,7 +99,7 @@ function calcSimulationLocatif(p) {
   const assuranceMensuelle = totalBorrowed * (p.tauxAssurance || 0) / 12 / 100;
 
   // ── Détail fiscal annuel ─────────────────────────────────────────────────
-  const horizonAns = Math.max(1, Math.min(p.horizonAns || p.duree || 20, Math.ceil(rows.length / 12)));
+  const horizonAns = requestedHorizon;
   const fiscalDetail = [];
 
   for (let an = 1; an <= horizonAns; an++) {
@@ -151,7 +168,7 @@ function calcSimulationLocatif(p) {
     capitalRembourseParAn.push(Math.round(totalCapRemb));
     valeurBienParAn.push(Math.round(lastRow.valeurBien));
     plusValuePotentielleParAn.push(Math.round(lastRow.valeurBien - coutTotalAcquisition));
-    patrimoineNetParAn.push(Math.round(lastRow.valeurBien - lastRow.capitalRestant));
+    patrimoineNetParAn.push(Math.round(lastRow.valeurBien - lastRow.capitalRestant - (p.apport || 0)));
   }
 
   // ── Cash-flow détaillé (mois, basé sur an 1) ────────────────────────────
