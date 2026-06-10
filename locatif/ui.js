@@ -293,7 +293,7 @@ function updateTrancheLoc(id, field, value) {
   else if (field === 'duree') t[field] = parseInt(value) || 0;
   else t[field] = parseFloat(value) || 0;
   refreshTranchesLocDerived();
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function addTrancheLoc() {
@@ -301,13 +301,13 @@ function addTrancheLoc() {
   tranchesLoc.push({ id: newId, label: 'Prêt complémentaire', isPrincipal: false, isPTZ: false,
     taux: 3.5, duree: 15, montant: 10000 });
   renderTranchesLoc();
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function removeTrancheLoc(id) {
   tranchesLoc = tranchesLoc.filter(t => t.id !== id);
   renderTranchesLoc();
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function initTranchesLoc(typeProjet) {
@@ -391,7 +391,7 @@ function onTypeChangeLocatif() {
   const travauxGroup = document.getElementById('loc-group-travaux');
   if (travauxGroup) travauxGroup.style.display = preset.showTravaux ? '' : 'none';
   initTranchesLoc(type);
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function onRegimeChangeLocatif() {
@@ -402,7 +402,7 @@ function onRegimeChangeLocatif() {
   if (compta) compta.style.display = isLMNPReel ? '' : 'none'; // compta utile au réel seulement
   const cfe = document.getElementById('loc-field-cfe');
   if (cfe) cfe.style.display = isLMNP ? '' : 'none';            // CFE due en meublé, micro inclus
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function updateCapitalDisplayLoc() {
@@ -426,7 +426,7 @@ function onHorizonChange() {
   const val = document.getElementById('loc-horizon')?.value || '20';
   const display = document.getElementById('loc-horizon-display');
   if (display) display.textContent = val + ' ans';
-  onInputLocatif();
+  renderLocatifNow();
 }
 
 function renderKPIsLocatif(r) {
@@ -918,7 +918,7 @@ function renderSidebarGroupSummariesLocatif() {
   set('loc-summary-valori', line('Appréciation', pct(gn('loc-apprec')) + ' / an'));
 }
 
-function onInputLocatif() {
+function renderLocatifNow() {
   const p = lireParamsLocatif();
   const r = calcSimulationLocatif(p);
   if (!r) return;
@@ -949,5 +949,7 @@ function mountLocatif() {
     updateCapitalDisplayLoc();
   }
 
-  onInputLocatif();
+  renderLocatifNow();
 }
+
+var onInputLocatif = debounce(renderLocatifNow, 120);

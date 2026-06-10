@@ -168,7 +168,7 @@
     if (!t) return;
     t[field] = (field === 'label') ? value : (parseFloat(value) || 0);
     refreshTrancheDerivedValues(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   function addTranche(prefix) {
@@ -177,13 +177,13 @@
       isPrincipal: false, isPTZ: false, taux: 3.40, duree: 10, montant: 0
     });
     renderTranchesUI(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   function removeTranche(prefix, id) {
     setTranches(prefix, getTranches(prefix).filter(t => t.id !== id));
     renderTranchesUI(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   const PRESETS = {
@@ -238,7 +238,7 @@
     } else {
       renderTranchesUI(prefix);
     }
-    onInput();
+    renderCreditNow();
   }
 
   function onTravauxInput(prefix, champ) {
@@ -455,7 +455,7 @@
     set(p + '-summary-valori', line('Appréciation', pct(gn('apprec')) + ' / an'));
   }
 
-  function onInput() {
+  function renderCreditNow() {
     var pA = lireParams('a');
     if (pA.capital <= 0 || pA.duree < 1) return;
     var resA = calcSimulation(pA);
@@ -593,7 +593,7 @@
     document.getElementById('btn-principal-gain').classList.toggle('active', mode === 'gain');
     document.getElementById('btn-principal-capital').classList.toggle('active', mode === 'capital');
     if (chartPrincipal) { chartPrincipal.destroy(); chartPrincipal = null; }
-    onInput();
+    renderCreditNow();
   }
   function renderGraphiqueSecondaire(res) {
   const ctx = document.getElementById('chart-secondaire').getContext('2d');
@@ -676,7 +676,7 @@ function toggleGraphiqueMode(mode) {
   document.getElementById('btn-mode-a').classList.toggle('active', mode === 'A');
   document.getElementById('btn-mode-b').classList.toggle('active', mode === 'B');
   if (chartSecondaire) { chartSecondaire.destroy(); chartSecondaire = null; }
-  onInput();
+  renderCreditNow();
 }
   function renderDonut(res) {
   const ctx = document.getElementById('chart-donut').getContext('2d');
@@ -856,7 +856,7 @@ function toggleTableauMode(mode) {
   modeTableau = mode;
   document.getElementById('btn-t-mois').classList.toggle('active', mode === 'mois');
   document.getElementById('btn-t-an').classList.toggle('active', mode === 'annee');
-  onInput();
+  renderCreditNow();
 }
 function openScenarioBPanel() {
   if (!scenarioBActif) {
@@ -889,7 +889,7 @@ function openScenarioBPanel() {
     if (travauxEl) travauxEl.style.display = pr.travaux ? 'block' : 'none';
   }
   document.getElementById('scenario-b-overlay').classList.add('open');
-  onInput();
+  renderCreditNow();
 }
 
 function closeScenarioBPanel(event) {
@@ -900,5 +900,7 @@ function closeScenarioBPanel(event) {
 function removeScenarioB() {
   scenarioBActif = false;
   document.getElementById('scenario-b-overlay').classList.remove('open');
-  onInput();
+  renderCreditNow();
 }
+
+var onInput = debounce(renderCreditNow, 120);
