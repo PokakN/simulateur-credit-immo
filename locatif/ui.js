@@ -13,9 +13,9 @@ let tranchesLoc = [
 ];
 
 const PRESETS_LOC = {
-  ancien: { notairePct: 7.5, notaireBadge: '[7–8,5 %]', showTravaux: true,  ptzDefaut: 0 },
-  neuf:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false, ptzDefaut: 40000 },
-  vefa:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false, ptzDefaut: 40000 }
+  ancien: { notairePct: 7.5, notaireBadge: '[7–8,5 %]', showTravaux: true },
+  neuf:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false },
+  vefa:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false }
 };
 
 function buildLocatifSidebarHTML() {
@@ -223,8 +223,7 @@ function renderTranchesLoc() {
   if (!container) return;
   container.innerHTML = tranchesLoc.map((t, i) => {
     const isPrincipal = t.isPrincipal;
-    const isPTZ = t.isPTZ;
-    const delBtn = !isPrincipal && !isPTZ
+    const delBtn = !isPrincipal
       ? `<button class="tranche-del" onclick="removeTrancheLoc('${t.id}')" title="Supprimer">×</button>` : '';
 
     if (isPrincipal) {
@@ -239,16 +238,6 @@ function renderTranchesLoc() {
     <input type="number" value="${t.duree}" min="1" max="30" step="1" oninput="updateTrancheLoc('${t.id}','duree',this.value)">
   </div>
   <div class="tranche-montant-calc" id="loc-tranche-montant-${t.id}">—<span class="tranche-badge">calculé</span></div>
-</div>`;
-    } else if (isPTZ) {
-      const ptzMens = (t.montant||0) > 0 ? Math.round((t.montant||0)/(t.duree*12)) : 0;
-      return `<div class="tranche-card" id="loc-tranche-${t.id}">
-  <div class="tranche-header"><span class="tranche-label-text">${t.label}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span></div>
-  <div class="sidebar-field" style="margin-bottom:5px">
-    <label>Montant (€)</label>
-    <input type="number" value="${t.montant||0}" min="0" step="1000" oninput="updateTrancheLoc('${t.id}','montant',this.value)">
-  </div>
-  <div class="tranche-info" id="loc-tranche-info-${t.id}" style="${ptzMens>0?'':'display:none'}">${ptzMens>0?fmt(ptzMens)+'/mois pendant '+t.duree+' ans · puis libéré':''}</div>
 </div>`;
     } else {
       return `<div class="tranche-card" id="loc-tranche-${t.id}">
@@ -322,15 +311,10 @@ function removeTrancheLoc(id) {
 }
 
 function initTranchesLoc(typeProjet) {
-  const hasPTZ = typeProjet === 'neuf' || typeProjet === 'vefa';
   tranchesLoc = [
     { id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false,
       taux: 3.5, duree: 20, montant: 0 }
   ];
-  if (hasPTZ) {
-    tranchesLoc.push({ id: 'ptz', label: 'PTZ', isPrincipal: false, isPTZ: true,
-      taux: 0, duree: 10, montant: 40000 });
-  }
   renderTranchesLoc();
 }
 
@@ -696,7 +680,7 @@ function renderTablesLocatif(r, p) {
     <tbody>
       <tr><td>Apport personnel</td><td>${fmt(p.apport)}</td></tr>
       ${p.tranches.map(t => `
-        <tr><td>${t.label} (${t.isPTZ ? '0' : fmtPct(t.taux)} / ${t.duree} ans)</td><td>${fmt(t.montant || 0)}</td></tr>
+        <tr><td>${t.label} (${fmtPct(t.taux)} / ${t.duree} ans)</td><td>${fmt(t.montant || 0)}</td></tr>
         <tr class="sub"><td>Mensualité</td><td>${fmt(calcMensualite(t.montant || 0, t.taux, t.duree))}/mois</td></tr>
       `).join('')}
       <tr class="total"><td>Total emprunté</td><td>${fmt(p.tranches.reduce((s,t) => s+(t.montant||0), 0))}</td></tr>
@@ -905,7 +889,7 @@ function renderSidebarGroupSummariesLocatif() {
   set('loc-summary-emprunts',
     line('Assurance', pct(gn('loc-assurance'))) +
     tranchesLoc.map(t =>
-      line(t.label, t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans')
+      line(t.label, pct(t.taux) + ' — ' + t.duree + ' ans')
     ).join('')
   );
 
