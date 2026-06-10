@@ -40,7 +40,12 @@
         if (inDiffere) {
           const intDiff = cr * tt;
           if (differeType === 'total') cr *= (1 + tt);
-          return { cap: 0, int: inDiffere && differeType === 'partiel' ? intDiff : 0, cr, ptz: 0, mens: 0, inDiffere: true };
+          return {
+            cap: 0,
+            int: differeType === 'partiel' ? intDiff : 0,
+            intCapitalise: differeType === 'total' ? intDiff : 0,
+            cr, ptz: 0, mens: 0, inDiffere: true
+          };
         }
         if (mois > nn || cr <= 0) return { cap: 0, int: 0, cr: 0, ptz: 0, mens: 0 };
 
@@ -64,6 +69,7 @@
       let sumCap = 0, sumInt = 0, sumCR = 0, sumPTZ = 0, sumMens = 0;
       let enDiffere = false;
       let differeInt = 0;
+      let sumIntCap = 0;
 
       trancheSchedules.forEach((sched, j) => {
         const r = sched[i];
@@ -71,6 +77,7 @@
         sumInt += r.int;
         sumCR  += r.cr;
         sumPTZ += r.ptz;
+        sumIntCap += r.intCapitalise || 0;
         if (r.inDiffere) { enDiffere = true; differeInt += r.int; }
         else if (r.mens > 0) sumMens += r.mens;
       });
@@ -86,6 +93,7 @@
         mensualite: mensualiteLigne,
         capital: sumCap,
         interets: sumInt,
+        interetsCapitalises: sumIntCap,
         assurance: assuranceMensuelle,
         ptz: sumPTZ,
         capitalRestant: sumCR,
@@ -101,12 +109,13 @@
 
     const interetsTotaux = rows.reduce((s, r) => s + r.interets, 0);
     const assuranceTotale = rows.reduce((s, r) => s + r.assurance, 0);
+    const interetsCapitalises = rows.reduce((s, r) => s + (r.interetsCapitalises || 0), 0);
     const fraisNotaire = p.fraisNotaire;   // déjà calculé dans lireParams
-    const coutCredit = interetsTotaux + assuranceTotale;
+    const coutCredit = interetsTotaux + assuranceTotale + interetsCapitalises;
     // total dépensé = prix d'acquisition + coût du financement
     const coutTotalOperation = (p.prixProjet || p.capital) + (p.travaux || 0)
       + p.fraisNotaire + p.fraisDossier + p.fraisGarantie
-      + interetsTotaux + assuranceTotale;
+      + interetsTotaux + assuranceTotale + interetsCapitalises;
 
     // Mensualité post-différé (première ligne hors période de différé)
     const postDiffereRow = rows[p.differeMois] || rows[0];
@@ -125,10 +134,13 @@
     const valeurBienTerme = p.valeurBien * Math.pow(1 + p.tauxApprec / 100, p.duree);
     const plusValueNette = valeurBienTerme - coutTotalOperation;
 
-    // Les frais (notaire, dossier, garantie) sont financés dans le capital emprunté
-    // et déjà amortis via les mensualités : la base actuarielle du TAEG est donc
-    // le capital total débloqué, sans nouvelle déduction (sinon double comptage).
-    const taeg = calcTAEG(Math.max(totalBorrowed, 1), rows);
+    // TAEG réglementaire : on actualise les mensualités contre le montant
+    // effectivement mis à disposition de l'emprunteur. Les frais de dossier et
+    // de garantie sont des coûts du crédit (même financés) : ils se déduisent
+    // de la base actuarielle, ce qui augmente le TAEG. Les frais de notaire
+    // (frais d'acquisition, pas de financement) restent exclus.
+    const capitalNetTAEG = Math.max(1, totalBorrowed - (p.fraisDossier || 0) - (p.fraisGarantie || 0));
+    const taeg = calcTAEG(capitalNetTAEG, rows);
 
     // Données graphique principal (mensuel)
     const capitalRestantParMois = rows.map(r => Math.round(r.capitalRestant));
@@ -182,6 +194,7 @@
       ptzMensualiteM,
       mensualiteAssurance: Math.round(mensualiteAssurance),
       interetsTotaux: Math.round(interetsTotaux),
+      interetsCapitalises: Math.round(interetsCapitalises),
       assuranceTotale: Math.round(assuranceTotale),
       fraisNotaire: Math.round(fraisNotaire),
       coutCredit: Math.round(coutCredit),

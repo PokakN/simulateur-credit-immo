@@ -67,7 +67,7 @@
       if (t.isPrincipal) {
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <span class="tranche-label-text">${t.label}</span>
+            <span class="tranche-label-text">${esc(t.label)}</span>
           </div>
           <div class="sidebar-field" style="margin-bottom:5px">
             <label>Taux (%)</label>
@@ -85,7 +85,7 @@
         const ptzMens = (t.montant || 0) > 0 ? Math.round((t.montant || 0) / (t.duree * 12)) : 0;
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <span class="tranche-label-text">${t.label}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span>
+            <span class="tranche-label-text">${esc(t.label)}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span>
           </div>
           <div class="sidebar-field" style="margin-bottom:5px">
             <label>Montant (€)</label>
@@ -97,7 +97,7 @@
       } else {
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <input type="text" value="${t.label}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0"
+            <input type="text" value="${esc(t.label)}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0"
               oninput="onTrancheChange('${prefix}','${t.id}','label',this.value)">
             ${delBtn}
           </div>
@@ -168,7 +168,7 @@
     if (!t) return;
     t[field] = (field === 'label') ? value : (parseFloat(value) || 0);
     refreshTrancheDerivedValues(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   function addTranche(prefix) {
@@ -177,13 +177,13 @@
       isPrincipal: false, isPTZ: false, taux: 3.40, duree: 10, montant: 0
     });
     renderTranchesUI(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   function removeTranche(prefix, id) {
     setTranches(prefix, getTranches(prefix).filter(t => t.id !== id));
     renderTranchesUI(prefix);
-    onInput();
+    renderCreditNow();
   }
 
   const PRESETS = {
@@ -238,7 +238,7 @@
     } else {
       renderTranchesUI(prefix);
     }
-    onInput();
+    renderCreditNow();
   }
 
   function onTravauxInput(prefix, champ) {
@@ -424,7 +424,7 @@
     set(p + '-summary-emprunts',
       line('Assurance', pct(gn('assurance'))) +
       tranches.map(function(t) {
-        return line(t.label, t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans');
+        return line(esc(t.label), t.isPTZ ? '0 % — ' + t.duree + ' ans' : pct(t.taux) + ' — ' + t.duree + ' ans');
       }).join('')
     );
 
@@ -455,7 +455,7 @@
     set(p + '-summary-valori', line('Appréciation', pct(gn('apprec')) + ' / an'));
   }
 
-  function onInput() {
+  function renderCreditNow() {
     var pA = lireParams('a');
     if (pA.capital <= 0 || pA.duree < 1) return;
     var resA = calcSimulation(pA);
@@ -593,7 +593,7 @@
     document.getElementById('btn-principal-gain').classList.toggle('active', mode === 'gain');
     document.getElementById('btn-principal-capital').classList.toggle('active', mode === 'capital');
     if (chartPrincipal) { chartPrincipal.destroy(); chartPrincipal = null; }
-    onInput();
+    renderCreditNow();
   }
   function renderGraphiqueSecondaire(res) {
   const ctx = document.getElementById('chart-secondaire').getContext('2d');
@@ -676,16 +676,22 @@ function toggleGraphiqueMode(mode) {
   document.getElementById('btn-mode-a').classList.toggle('active', mode === 'A');
   document.getElementById('btn-mode-b').classList.toggle('active', mode === 'B');
   if (chartSecondaire) { chartSecondaire.destroy(); chartSecondaire = null; }
-  onInput();
+  renderCreditNow();
 }
   function renderDonut(res) {
   const ctx = document.getElementById('chart-donut').getContext('2d');
   const pA = lireParams('a');
-  const capitalTotal = res.amortissement.reduce((s, r) => s + r.capital, 0);
+  const capitalTotal = res.amortissement.reduce((s, r) => s + r.capital, 0)
+    - (res.interetsCapitalises || 0);
   const fraisTotal = res.fraisNotaire + pA.fraisDossier + pA.fraisGarantie;
 
   const labels = ['Capital', 'Intérêts', 'Assurance', 'Frais'];
-  const values = [Math.round(capitalTotal), res.interetsTotaux, res.assuranceTotale, Math.round(fraisTotal)];
+  const values = [
+    Math.round(capitalTotal),
+    res.interetsTotaux + (res.interetsCapitalises || 0),
+    res.assuranceTotale,
+    Math.round(fraisTotal)
+  ];
   const colors = ['#5b80a8', '#b1503f', '#c1652f', '#71956b'];
   if (pA.travaux > 0) {
     labels.push('Travaux');
@@ -767,7 +773,7 @@ function toggleGraphiqueMode(mode) {
     const totalEmprunte = tranches.reduce((s, t) => s + (t.montant || 0), 0);
     const totalProjet = p.apport + totalEmprunte;
     const rows = tranches.map(t => `<tr>
-      <td>${t.label}</td>
+      <td>${esc(t.label)}</td>
       <td>${t.isPTZ ? '0 % (PTZ)' : fmtPct(t.taux)}</td>
       <td>${t.duree} ans</td>
       <td>${fmt(t.montant || 0)}</td>
@@ -850,7 +856,7 @@ function toggleTableauMode(mode) {
   modeTableau = mode;
   document.getElementById('btn-t-mois').classList.toggle('active', mode === 'mois');
   document.getElementById('btn-t-an').classList.toggle('active', mode === 'annee');
-  onInput();
+  renderCreditNow();
 }
 function openScenarioBPanel() {
   if (!scenarioBActif) {
@@ -883,7 +889,7 @@ function openScenarioBPanel() {
     if (travauxEl) travauxEl.style.display = pr.travaux ? 'block' : 'none';
   }
   document.getElementById('scenario-b-overlay').classList.add('open');
-  onInput();
+  renderCreditNow();
 }
 
 function closeScenarioBPanel(event) {
@@ -894,5 +900,7 @@ function closeScenarioBPanel(event) {
 function removeScenarioB() {
   scenarioBActif = false;
   document.getElementById('scenario-b-overlay').classList.remove('open');
-  onInput();
+  renderCreditNow();
 }
+
+var onInput = debounce(renderCreditNow, 120);

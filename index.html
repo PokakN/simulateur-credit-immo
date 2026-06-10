@@ -13,12 +13,14 @@
 <body>
   <header class="masthead">
     <div class="masthead-title">Simulateur <em>Crédit Immobilier</em></div>
-    <div class="mode-switch" id="mode-switch">
-      <button type="button" class="mode-btn active" data-mode="credit" onclick="switchMode('credit')">Crédit immobilier</button>
-      <button type="button" class="mode-btn" data-mode="locatif" disabled title="Bientôt disponible">
-        Investissement locatif <span class="mode-badge">bientôt</span>
+    <nav class="mode-switcher">
+      <button class="mode-tab active" data-mode="credit" onclick="switchMode('credit')">
+        Crédit immobilier
       </button>
-    </div>
+      <button class="mode-tab" data-mode="locatif" onclick="switchMode('locatif')">
+        Investissement locatif
+      </button>
+    </nav>
     <div class="masthead-meta">
       <span>Réf. Sim—01</span>
       <span>Échelle 1:1</span>
@@ -218,6 +220,16 @@
     </main>
     </div><!-- end .app-mode#app-credit -->
 
+    <!-- Mode Investissement locatif -->
+    <div id="locatif-mode" class="app-mode" style="display:none">
+      <div id="locatif-params-panel">
+        <!-- injecté par locatif/ui.js → buildLocatifSidebarHTML() -->
+      </div>
+      <div id="locatif-results" class="content">
+        <!-- injecté par locatif/ui.js → mountLocatif() -->
+      </div>
+    </div>
+
   </div><!-- end .app -->
 
   <!-- ===== PANNEAU PROJETS ===== -->
@@ -388,6 +400,8 @@
   <script src="shared/persistence.js"></script>
   <script src="credit/engine.js"></script>
   <script src="credit/ui.js"></script>
+  <script src="locatif/engine.js"></script>
+  <script src="locatif/ui.js"></script>
   <script src="app.js"></script>
 
 </body>

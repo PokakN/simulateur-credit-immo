@@ -438,3 +438,231 @@
 .comparison-delta { text-align: center; font-size: 12px; }
 .comparison-delta--good { color: var(--sage); }
 .comparison-delta--bad { color: var(--brick); }
+
+/* ── Locatif KPIs ── */
+/* .kpi-card, .kpi-label, .kpi-value, .kpi-sub intentionally inherit credit styles */
+.kpis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.kpi-pos { color: var(--sage); }
+.kpi-neg { color: var(--brick); }
+
+/* ── Cash-flow breakdown ── */
+.cf-breakdown {
+  background: var(--paper); border-radius: 4px;
+  padding: 20px 22px; box-shadow: 0 10px 30px rgba(10,17,32,.3);
+  margin-bottom: 18px;
+}
+.cf-section-title {
+  font-family: var(--font-display); font-style: italic; font-size: 16px; font-weight: 500;
+  color: var(--ink-text); margin-bottom: 14px;
+}
+.cf-row {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-text);
+  padding: 6px 0; border-bottom: 1px solid var(--paper-line);
+}
+.cf-row:last-child { border-bottom: none; }
+.cf-row.cf-total {
+  font-weight: 700; border-top: 2px solid var(--rust) !important;
+  border-bottom: none; margin-top: 6px; padding-top: 8px;
+}
+.cf-pos { color: var(--sage); font-weight: 600; font-family: var(--font-mono); }
+.cf-neg { color: var(--brick); font-weight: 600; font-family: var(--font-mono); }
+
+/* ── Histogramme ── */
+.histo-section {
+  background: var(--paper); border-radius: 4px;
+  padding: 20px 22px; box-shadow: 0 10px 30px rgba(10,17,32,.3);
+  margin-bottom: 18px;
+}
+.histo-horizon-wrapper { display: grid; grid-template-columns: 1fr 140px; gap: 14px; align-items: start; margin-top: 14px; min-width: 0; }
+.chart-canvas-wrap { min-width: 0; overflow: hidden; }
+.horizon-panel {
+  background: var(--paper-deep); border-radius: 4px;
+  border: 1px solid var(--paper-line); padding: 14px; text-align: center;
+}
+.horizon-label {
+  font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--ink-muted); margin-bottom: 6px;
+}
+#loc-horizon-big {
+  font-family: var(--font-display); font-size: 28px; font-weight: 600; color: var(--ink-text);
+}
+
+/* ── Rendements ── */
+.rendements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 18px; }
+.rendements-grid--4 { grid-template-columns: repeat(4,1fr); }
+.rdt-card {
+  background: var(--paper); border-radius: 4px;
+  border-top: 3px solid var(--sage);
+  padding: 18px 20px; text-align: center;
+  box-shadow: 0 10px 30px rgba(10,17,32,.35);
+}
+.rdt-card--neg { border-top-color: var(--rust); }
+.rdt-label {
+  font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 6px;
+}
+.rdt-value { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--ink-text); }
+.rdt-value--neg { color: var(--rust); }
+.rdt-desc { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); margin-top: 4px; }
+
+/* ── Charts section ── */
+.charts-section { margin-bottom: 18px; }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.chart-block {
+  background: var(--paper); border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(10,17,32,.3); overflow: hidden;
+}
+.chart-title {
+  padding: 12px 16px; background: var(--paper-deep);
+  font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
+  color: var(--ink-text); border-bottom: 1px solid var(--paper-line);
+}
+.chart-block canvas { padding: 10px; display: block; }
+
+/* ── Tables récap locatif ── */
+.tables-section { margin-bottom: 18px; }
+.tables-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.recap-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-mono); font-size: 13px;
+  background: var(--paper); border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(10,17,32,.25); overflow: hidden;
+}
+.recap-table caption {
+  font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
+  color: var(--ink-text); text-align: left; padding: 12px 16px;
+  background: var(--paper-deep); border-bottom: 1px solid var(--paper-line);
+  caption-side: top;
+}
+.recap-table td { padding: 6px 14px; color: var(--ink-text); border-bottom: 1px solid var(--paper-line); }
+.recap-table td:last-child { text-align: right; font-weight: 600; }
+.recap-table tr.sub td { font-size: 12px; padding-left: 24px; color: var(--ink-muted); }
+.recap-table tr.total td { font-weight: 700; border-top: 2px solid var(--rust); background: rgba(193,101,47,.06); color: var(--rust); }
+
+/* ── Tableau fiscal annuel ── */
+.fiscal-annuel-section { margin-bottom: 18px; }
+.section-block {
+  background: var(--paper); border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(10,17,32,.3);
+  overflow: hidden; margin-bottom: 18px;
+}
+.section-block-title {
+  font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 500;
+  color: var(--ink-text); padding: 12px 16px;
+  background: var(--paper-deep); border-bottom: 1px solid var(--paper-line);
+}
+.annuel-table { width: 100%; border-collapse: collapse; }
+.annuel-table thead tr { background: var(--paper-deep); }
+.annuel-table th {
+  padding: 8px 10px; text-align: right;
+  font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-muted); border-bottom: 2px solid var(--paper-line);
+  white-space: nowrap; position: sticky; top: 0; background: var(--paper-deep);
+}
+.annuel-table th:first-child { text-align: center; }
+.annuel-table td {
+  padding: 5px 10px; text-align: right;
+  border-bottom: 1px solid var(--paper-line);
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-text);
+}
+.annuel-table td:first-child { text-align: center; font-family: var(--font-sans); font-weight: 600; color: var(--ink-muted); }
+.annuel-table tr:nth-child(even) td { background: rgba(236,225,203,.45); }
+.annuel-table tr:hover td { background: rgba(193,101,47,.06); }
+.annuel-table tr.fiscal-cliff td { background: rgba(193,101,47,.08); }
+.annuel-table tfoot td { font-weight: 700; border-top: 2px solid var(--rust); background: rgba(193,101,47,.06) !important; color: var(--rust); }
+.annuel-table .neg-cell { color: var(--brick); }
+.annuel-table .base-neg { color: var(--sage); font-style: italic; }
+.annuel-table .base-pos { color: var(--rust); font-weight: 600; }
+.annuel-table .tax-pos  { color: var(--brick); }
+.annuel-table .cf-pos-cell { color: var(--sage); font-weight: 600; }
+.annuel-table .cf-neg-cell { color: var(--brick); }
+.cliff-note {
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted);
+  padding: 10px 16px; background: rgba(193,101,47,.04);
+  border-top: 1px solid rgba(193,101,47,.15);
+}
+
+/* ── Section fiscalité détaillée ── */
+.fiscal-detail-section { margin-bottom: 18px; }
+.fiscal-detail-grid { display: grid; grid-template-columns: 1fr 220px; gap: 16px; align-items: start; padding: 16px; }
+.fiscal-calc { font-family: var(--font-mono); font-size: 13px; }
+.fd-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--paper-line); }
+.fd-row:last-child { border-bottom: none; }
+.fd-row.section-row { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); border-bottom: none; margin-top: 8px; }
+.fd-row.indent span:first-child { padding-left: 12px; color: var(--ink-muted); }
+.fd-row.result-row { font-weight: 700; border-top: 2px solid var(--rust); margin-top: 6px; padding-top: 8px; border-bottom: none; }
+.fd-row.avantage-row { background: rgba(113,149,107,.1); padding: 5px 8px; border-radius: 3px; border: 1px solid rgba(113,149,107,.35); margin-top: 6px; }
+.pos-amt { font-family: var(--font-mono); font-weight: 600; color: var(--sage); }
+.neg-amt { font-family: var(--font-mono); color: var(--brick); }
+.fiscal-donut-block { background: var(--paper-deep); border-radius: 4px; border: 1px solid var(--paper-line); padding: 12px; }
+.donut-title { font-family: var(--font-mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); margin-bottom: 8px; text-align: center; }
+
+/* ── Mode switcher tabs (in masthead — dark background) ── */
+.mode-switcher { display: flex; gap: 4px; }
+.mode-tab {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  font-family: var(--font-sans); font-size: 13px; letter-spacing: .02em;
+  padding: 6px 14px 4px; cursor: pointer; color: var(--parchment-muted);
+  transition: color .2s ease, border-color .2s ease;
+}
+.mode-tab:hover { color: var(--parchment); }
+.mode-tab.active { color: var(--parchment); border-bottom-color: var(--rust); }
+
+/* ── Project mode badges ── */
+.projet-mode-badge {
+  display: inline-block; font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: .05em;
+  border-radius: 2px; padding: 2px 6px; margin-right: 4px; font-weight: 600;
+}
+.projet-mode-credit  { background: rgba(91,128,168,.2); color: var(--blueprint-soft); }
+.projet-mode-locatif { background: rgba(113,149,107,.2); color: var(--sage); }
+
+/* ── Locatif mode — constrain flex children so they can shrink ── */
+#locatif-mode { min-width: 0; }
+#locatif-results { min-width: 0; }
+
+/* ── Locatif params panel (sidebar) ── */
+#locatif-params-panel {
+  width: 560px; min-width: 400px; max-width: 560px;
+  background: var(--ink); color: var(--parchment);
+  border-radius: 5px; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.sidebar-section-title {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--parchment-muted);
+  margin: 6px 0 2px; padding-bottom: 5px;
+  border-bottom: 1px solid rgba(232,225,210,.12);
+}
+/* Locatif sidebar inputs match credit sidebar inputs */
+#locatif-params-panel .sidebar-group-body label {
+  display: block; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--parchment-muted); margin-bottom: 10px;
+}
+#locatif-params-panel .sidebar-group-body label input,
+#locatif-params-panel .sidebar-group-body label select {
+  width: 100%; display: block; margin-top: 5px;
+  background: rgba(8, 13, 26, .4);
+  border: 1px solid rgba(138, 166, 196, .3); border-bottom: 2px solid rgba(138, 166, 196, .3);
+  border-radius: 3px; color: var(--parchment);
+  font-family: var(--font-mono); font-size: 15px;
+  padding: 9px 10px; outline: none;
+  transition: border-color .2s ease, background .2s ease;
+}
+#locatif-params-panel .sidebar-group-body label input:focus,
+#locatif-params-panel .sidebar-group-body label select:focus {
+  border-color: var(--rust); border-bottom-color: var(--rust);
+  background: rgba(193,101,47,.1);
+}
+#locatif-params-panel .sidebar-group-body button {
+  width: 100%; background: transparent;
+  border: 1px solid var(--blueprint-soft); border-radius: 2px;
+  color: var(--parchment); font-family: var(--font-display); font-style: italic;
+  font-size: 13px; padding: 10px; cursor: pointer;
+  transition: all .2s ease; margin-bottom: 6px;
+}
+#locatif-params-panel .sidebar-group-body button:hover {
+  background: var(--blueprint-soft); color: var(--ink); font-style: normal;
+}

@@ -3,9 +3,18 @@
 let currentMode = 'credit';
 
 function switchMode(mode) {
-  if (mode === currentMode) return;
   currentMode = mode;
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  const creditEl  = document.getElementById('app-credit');
+  const locatifEl = document.getElementById('locatif-mode');
+  if (creditEl)  creditEl.style.display  = mode === 'credit'  ? '' : 'none';
+  if (locatifEl) locatifEl.style.display = mode === 'locatif' ? '' : 'none';
+
+  document.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  if (mode === 'locatif') mountLocatif();
+  if (mode === 'credit')  renderCreditNow();
 }
 
 const PARAMS_COLLAPSED_KEY = 'simulateur_params_collapsed';
@@ -19,6 +28,13 @@ function toggleParamsSection() {
   if (!section) return;
   const collapsed = section.classList.toggle('collapsed');
   localStorage.setItem(PARAMS_COLLAPSED_KEY, collapsed ? '1' : '0');
+  section.querySelector('.params-toggle').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+}
+
+function toggleParamsSectionLoc() {
+  const section = document.getElementById('params-section-loc');
+  if (!section) return;
+  const collapsed = section.classList.toggle('collapsed');
   section.querySelector('.params-toggle').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 }
 
@@ -39,6 +55,7 @@ function initApp() {
     setTranches('a', [{ id: 'principal', label: 'Prêt principal', isPrincipal: true, isPTZ: false, taux: 3.40, duree: 20 }]);
   }
   onTypeChange('a');
+  switchMode('credit');
 }
 
 initApp();
