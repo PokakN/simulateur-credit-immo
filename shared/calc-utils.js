@@ -28,3 +28,24 @@
     const rMensuel = (lo + hi) / 2;
     return Math.round((Math.pow(1 + rMensuel, 12) - 1) * 10000) / 100;
   }
+
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeUrl(s) {
+  try {
+    const u = new URL(String(s ?? ''));
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '';
+  } catch { return ''; }
+}
+
+function debounce(fn, ms) {
+  let t;
+  return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+}

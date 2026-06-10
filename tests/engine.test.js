@@ -377,6 +377,36 @@ test('TAEG locatif : les frais de dossier/garantie financés augmentent le TAEG'
     `TAEG locatif avec frais (${resAvec.taeg}) devrait dépasser ${resSans.taeg} + 0.1`);
 });
 
+// ── esc() ─────────────────────────────────────────────────────────────────────
+console.log('\nesc / safeUrl');
+
+test('esc est défini', () => {
+  assert(typeof esc === 'function', 'esc is defined');
+});
+test('esc échappe les balises HTML', () => {
+  assert(esc('<script>alert(1)</script>') === '&lt;script&gt;alert(1)&lt;/script&gt;', 'esc escapes HTML');
+});
+test('esc gère null', () => {
+  assert(esc(null) === '', 'esc handles null');
+});
+test('esc échappe les guillemets doubles', () => {
+  assert(esc('"hello"') === '&quot;hello&quot;', 'esc escapes quotes');
+});
+
+// ── safeUrl() ─────────────────────────────────────────────────────────────────
+test('safeUrl est défini', () => {
+  assert(typeof safeUrl === 'function', 'safeUrl is defined');
+});
+test('safeUrl autorise https', () => {
+  assert(safeUrl('https://example.com') === 'https://example.com/', 'safeUrl allows https');
+});
+test('safeUrl bloque javascript:', () => {
+  assert(safeUrl('javascript:alert(1)') === '', 'safeUrl blocks javascript:');
+});
+test('safeUrl bloque les non-URLs', () => {
+  assert(safeUrl('not-a-url') === '', 'safeUrl blocks non-URLs');
+});
+
 // ── Résumé ────────────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(50)}`);
 console.log(`Résultats : ${passed} ✅  ${failed} ❌  (${passed + failed} tests)`);

@@ -67,7 +67,7 @@
       if (t.isPrincipal) {
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <span class="tranche-label-text">${t.label}</span>
+            <span class="tranche-label-text">${esc(t.label)}</span>
           </div>
           <div class="sidebar-field" style="margin-bottom:5px">
             <label>Taux (%)</label>
@@ -85,7 +85,7 @@
         const ptzMens = (t.montant || 0) > 0 ? Math.round((t.montant || 0) / (t.duree * 12)) : 0;
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <span class="tranche-label-text">${t.label}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span>
+            <span class="tranche-label-text">${esc(t.label)}<span class="tranche-badge">0 % · ${t.duree} ans fixe</span></span>
           </div>
           <div class="sidebar-field" style="margin-bottom:5px">
             <label>Montant (€)</label>
@@ -97,7 +97,7 @@
       } else {
         return `<div class="tranche-card">
           <div class="tranche-header">
-            <input type="text" value="${t.label}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0"
+            <input type="text" value="${esc(t.label)}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0"
               oninput="onTrancheChange('${prefix}','${t.id}','label',this.value)">
             ${delBtn}
           </div>

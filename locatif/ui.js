@@ -228,7 +228,7 @@ function renderTranchesLoc() {
 
     if (isPrincipal) {
       return `<div class="tranche-card" id="loc-tranche-${t.id}">
-  <div class="tranche-header"><span class="tranche-label-text">${t.label}</span></div>
+  <div class="tranche-header"><span class="tranche-label-text">${esc(t.label)}</span></div>
   <div class="sidebar-field" style="margin-bottom:5px">
     <label>Taux (%)</label>
     <input type="number" value="${t.taux}" min="0" max="30" step="0.01" oninput="updateTrancheLoc('${t.id}','taux',this.value)">
@@ -242,7 +242,7 @@ function renderTranchesLoc() {
     } else {
       return `<div class="tranche-card" id="loc-tranche-${t.id}">
   <div class="tranche-header">
-    <input type="text" value="${t.label}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0" oninput="updateTrancheLoc('${t.id}','label',this.value)">
+    <input type="text" value="${esc(t.label)}" style="background:transparent;border:none;border-bottom:1px solid var(--ink-line);color:var(--parchment);font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:500;width:calc(100% - 24px);outline:none;padding:2px 0" oninput="updateTrancheLoc('${t.id}','label',this.value)">
     ${delBtn}
   </div>
   <div class="sidebar-field" style="margin-bottom:5px">

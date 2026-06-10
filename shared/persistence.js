@@ -283,11 +283,11 @@ function renderProjetsList() {
   el.innerHTML = projets.map(p => `
     <div class="projet-card">
       <div class="projet-card-header">
-        <span class="projet-card-name">${p.nom}</span>
-        <span class="projet-card-type">${p.typeProjet || ''}</span>
+        <span class="projet-card-name">${esc(p.nom)}</span>
+        <span class="projet-card-type">${esc(p.typeProjet || '')}</span>
       </div>
       <div class="projet-card-kpi"><span class="projet-mode-badge projet-mode-${p.mode || 'credit'}">${p.mode === 'locatif' ? 'Locatif' : 'Crédit'}</span>${fmt(p.mensualite)}/mois · ${p.date}</div>
-      ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${p.urlAnnonce}" target="_blank" rel="noopener">→ Voir l'annonce</a></div>` : ''}
+      ${p.urlAnnonce ? `<div class="projet-card-url"><a href="${safeUrl(p.urlAnnonce)}" target="_blank" rel="noopener">→ ${esc(p.urlAnnonce)}</a></div>` : ''}
       <div class="projet-card-actions">
         <button onclick="chargerProjet('${p.id}')">Charger</button>
         <button onclick="mettreAJourProjet('${p.id}')">Mettre à jour</button>
