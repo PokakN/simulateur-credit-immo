@@ -13,15 +13,13 @@ let tranchesLoc = [
 ];
 
 const PRESETS_LOC = {
-  ancien: { notairePct: 7.5, showTravaux: true,  ptzDefaut: 0 },
-  neuf:   { notairePct: 2.5, showTravaux: false, ptzDefaut: 40000 },
-  vefa:   { notairePct: 2.5, showTravaux: false, ptzDefaut: 40000 }
+  ancien: { notairePct: 7.5, notaireBadge: '[7–8,5 %]', showTravaux: true,  ptzDefaut: 0 },
+  neuf:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false, ptzDefaut: 40000 },
+  vefa:   { notairePct: 2.5, notaireBadge: '[2–3 %]',   showTravaux: false, ptzDefaut: 40000 }
 };
 
 function buildLocatifSidebarHTML() {
   return `
-<div class="sidebar-section-title">Acquisition</div>
-
 <div class="sidebar-group" id="loc-group-type">
   <div class="sidebar-group-title" data-index="01" onclick="toggleSidebarGroup(this.parentElement)">Type de projet</div>
   <div class="sidebar-group-summary" id="loc-summary-projet"></div>
@@ -36,43 +34,66 @@ function buildLocatifSidebarHTML() {
       <option value="neuf">Neuf</option>
       <option value="vefa">VEFA</option>
     </select>
+    <div class="sidebar-field">
+      <label>Prix du bien (€)</label>
+      <input type="number" id="loc-prix-projet" value="200000" min="0" step="1000" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Apport personnel (€)</label>
+      <input type="number" id="loc-apport" value="30000" min="0" step="1000" oninput="onInputLocatif()">
+    </div>
+    <div id="loc-capital-display"></div>
   </div>
 </div>
-
-<div class="sidebar-group" id="loc-group-prix">
-  <div class="sidebar-group-title" data-index="02" onclick="toggleSidebarGroup(this.parentElement)">Prix &amp; frais</div>
-  <div class="sidebar-group-summary" id="loc-summary-prix"></div>
-  <div class="sidebar-group-body">
-    <label>Prix du bien (€) <input type="number" id="loc-prix-projet" value="200000" min="0" oninput="onInputLocatif()"></label>
-    <label>Apport (€) <input type="number" id="loc-apport" value="30000" min="0" oninput="onInputLocatif()"></label>
-    <label>Frais de notaire (%) <input type="number" id="loc-notaire" value="7.5" step="0.1" min="0" max="15" oninput="onInputLocatif()"></label>
-    <label>Frais d'agence (€) <input type="number" id="loc-agence" value="5000" min="0" oninput="onInputLocatif()"></label>
-    <label>Garantie (%) <input type="number" id="loc-garantie-pct" value="1.5" step="0.1" min="0" max="3" oninput="onInputLocatif()"></label>
-    <label>Frais de dossier (€) <input type="number" id="loc-dossier" value="1000" min="0" oninput="onInputLocatif()"></label>
-  </div>
-</div>
-
-<div class="sidebar-group" id="loc-group-travaux">
-  <div class="sidebar-group-title" data-index="03" onclick="toggleSidebarGroup(this.parentElement)">Travaux &amp; mobilier</div>
-  <div class="sidebar-group-summary" id="loc-summary-travaux"></div>
-  <div class="sidebar-group-body">
-    <label>Travaux (€) <input type="number" id="loc-travaux-total" value="0" min="0" oninput="onInputLocatif()"></label>
-    <label>Mobilier (€) <input type="number" id="loc-mobilier" value="0" min="0" oninput="onInputLocatif()" title="Amortissable en LMNP réel (20%/an sur 5 ans)"></label>
-  </div>
-</div>
-
-<div class="sidebar-section-title">Financement</div>
 
 <div class="sidebar-group" id="loc-group-emprunts">
-  <div class="sidebar-group-title" data-index="04" onclick="toggleSidebarGroup(this.parentElement)">Emprunts</div>
+  <div class="sidebar-group-title" data-index="02" onclick="toggleSidebarGroup(this.parentElement)">Emprunts</div>
   <div class="sidebar-group-summary" id="loc-summary-emprunts"></div>
   <div class="sidebar-group-body">
     <div class="sidebar-field">
       <label>Taux assurance annuel (%)</label>
       <input type="number" id="loc-assurance" value="0.33" step="0.01" min="0" oninput="onInputLocatif()">
     </div>
-    <div id="loc-tranches-container"></div>
+    <div id="loc-tranches-list"></div>
     <button class="btn-add-tranche" onclick="addTrancheLoc()">+ Ajouter un prêt</button>
+  </div>
+</div>
+
+<div class="sidebar-group" id="loc-group-frais">
+  <div class="sidebar-group-title" data-index="03" onclick="toggleSidebarGroup(this.parentElement)">Frais</div>
+  <div class="sidebar-group-summary" id="loc-summary-frais"></div>
+  <div class="sidebar-group-body">
+    <div class="sidebar-field">
+      <label>Frais de notaire (%) <span class="badge" id="loc-notaire-badge">[7–8,5 %]</span></label>
+      <input type="number" id="loc-notaire" value="7.5" step="0.1" min="0" max="15" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Frais d'agence (€)</label>
+      <input type="number" id="loc-agence" value="5000" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Frais de garantie (%) <span class="badge">[1–2 %]</span></label>
+      <input type="number" id="loc-garantie-pct" value="1.5" step="0.1" min="0" max="3" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Frais de dossier (€) <span class="badge">[500–1 500 €]</span></label>
+      <input type="number" id="loc-dossier" value="1000" min="0" oninput="onInputLocatif()">
+    </div>
+  </div>
+</div>
+
+<div class="sidebar-group" id="loc-group-travaux">
+  <div class="sidebar-group-title" data-index="04" onclick="toggleSidebarGroup(this.parentElement)">Travaux &amp; mobilier</div>
+  <div class="sidebar-group-summary" id="loc-summary-travaux"></div>
+  <div class="sidebar-group-body">
+    <div class="sidebar-field">
+      <label>Travaux (€)</label>
+      <input type="number" id="loc-travaux-total" value="0" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Mobilier (€)</label>
+      <input type="number" id="loc-mobilier" value="0" min="0" oninput="onInputLocatif()" title="Amortissable en LMNP réel (20%/an sur 5 ans)">
+    </div>
   </div>
 </div>
 
@@ -80,25 +101,36 @@ function buildLocatifSidebarHTML() {
   <div class="sidebar-group-title" data-index="05" onclick="toggleSidebarGroup(this.parentElement)">Différé</div>
   <div class="sidebar-group-summary" id="loc-summary-differe"></div>
   <div class="sidebar-group-body">
-    <label>Durée différé (mois) <input type="number" id="loc-differe-mois" value="0" min="0" max="24" oninput="onInputLocatif()"></label>
-    <label>Type
+    <div class="sidebar-field">
+      <label>Durée du différé (mois)</label>
+      <input type="number" id="loc-differe-mois" value="0" min="0" max="24" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Type de différé</label>
       <select id="loc-differe-type" onchange="onInputLocatif()">
         <option value="partiel">Partiel (intérêts seuls)</option>
-        <option value="total">Total (intérêts capitalisés)</option>
+        <option value="total">Total (aucun paiement)</option>
       </select>
-    </label>
+    </div>
   </div>
 </div>
-
-<div class="sidebar-section-title">Exploitation</div>
 
 <div class="sidebar-group" id="loc-group-revenus">
   <div class="sidebar-group-title" data-index="06" onclick="toggleSidebarGroup(this.parentElement)">Revenus locatifs</div>
   <div class="sidebar-group-summary" id="loc-summary-revenus"></div>
   <div class="sidebar-group-body">
-    <label>Loyer mensuel HC (€) <input type="number" id="loc-loyer" value="900" min="0" oninput="onInputLocatif()"></label>
-    <label>Charges récupérables (€/mois) <input type="number" id="loc-charges-recup" value="80" min="0" oninput="onInputLocatif()"></label>
-    <label>Vacance locative (%) <input type="number" id="loc-vacance" value="8" step="0.5" min="0" max="50" oninput="onInputLocatif()"></label>
+    <div class="sidebar-field">
+      <label>Loyer mensuel HC (€)</label>
+      <input type="number" id="loc-loyer" value="900" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Charges récupérables (€/mois)</label>
+      <input type="number" id="loc-charges-recup" value="80" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Vacance locative (%)</label>
+      <input type="number" id="loc-vacance" value="8" step="0.5" min="0" max="50" oninput="onInputLocatif()">
+    </div>
   </div>
 </div>
 
@@ -106,14 +138,38 @@ function buildLocatifSidebarHTML() {
   <div class="sidebar-group-title" data-index="07" onclick="toggleSidebarGroup(this.parentElement)">Charges récurrentes</div>
   <div class="sidebar-group-summary" id="loc-summary-charges"></div>
   <div class="sidebar-group-body">
-    <label>Charges de copro (€/an) <input type="number" id="loc-charges-copro" value="1200" min="0" oninput="onInputLocatif()"></label>
-    <label>Taxe foncière (€/an) <input type="number" id="loc-taxe-fonciere" value="1000" min="0" oninput="onInputLocatif()"></label>
-    <label>Assurance PNO (€/an) <input type="number" id="loc-assurance-pno" value="200" min="0" oninput="onInputLocatif()"></label>
-    <label>Garantie loyers impayés (% loyer) <input type="number" id="loc-garantie-loyers" value="2.5" step="0.1" min="0" oninput="onInputLocatif()"></label>
-    <label>Gestion locative (% loyer) <input type="number" id="loc-gestion" value="7" step="0.5" min="0" oninput="onInputLocatif()"></label>
-    <label>Entretien (€/an) <input type="number" id="loc-entretien" value="500" min="0" oninput="onInputLocatif()"></label>
-    <label id="loc-label-comptabilite">Comptabilité (€/an) <input type="number" id="loc-comptabilite" value="350" min="0" oninput="onInputLocatif()"></label>
-    <label id="loc-label-cfe">CFE (€/an) <input type="number" id="loc-cfe" value="200" min="0" oninput="onInputLocatif()"></label>
+    <div class="sidebar-field">
+      <label>Charges de copro (€/an)</label>
+      <input type="number" id="loc-charges-copro" value="1200" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Taxe foncière (€/an)</label>
+      <input type="number" id="loc-taxe-fonciere" value="1000" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Assurance PNO (€/an)</label>
+      <input type="number" id="loc-assurance-pno" value="200" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Garantie loyers impayés (% loyer)</label>
+      <input type="number" id="loc-garantie-loyers" value="2.5" step="0.1" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Gestion locative (% loyer)</label>
+      <input type="number" id="loc-gestion" value="7" step="0.5" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field">
+      <label>Entretien (€/an)</label>
+      <input type="number" id="loc-entretien" value="500" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field" id="loc-field-comptabilite">
+      <label>Comptabilité (€/an)</label>
+      <input type="number" id="loc-comptabilite" value="350" min="0" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-field" id="loc-field-cfe">
+      <label>CFE (€/an)</label>
+      <input type="number" id="loc-cfe" value="200" min="0" oninput="onInputLocatif()">
+    </div>
   </div>
 </div>
 
@@ -121,14 +177,17 @@ function buildLocatifSidebarHTML() {
   <div class="sidebar-group-title" data-index="08" onclick="toggleSidebarGroup(this.parentElement)">Fiscalité</div>
   <div class="sidebar-group-summary" id="loc-summary-fiscal"></div>
   <div class="sidebar-group-body">
-    <label>Régime fiscal
+    <div class="sidebar-field">
+      <label>Régime fiscal</label>
       <select id="loc-regime-fiscal" onchange="onRegimeChangeLocatif()">
         <option value="lmnp_reel">LMNP réel (meublé)</option>
+        <option value="lmnp_micro">LMNP micro-BIC (meublé)</option>
         <option value="nu_micro">Location nue — micro-foncier</option>
         <option value="nu_reel">Location nue — régime réel</option>
       </select>
-    </label>
-    <label>TMI (%)
+    </div>
+    <div class="sidebar-field">
+      <label>TMI (%)</label>
       <select id="loc-tmi" onchange="onInputLocatif()">
         <option value="0">0 %</option>
         <option value="11">11 %</option>
@@ -136,35 +195,31 @@ function buildLocatifSidebarHTML() {
         <option value="41">41 %</option>
         <option value="45">45 %</option>
       </select>
-    </label>
+    </div>
   </div>
 </div>
-
-<div class="sidebar-section-title">Valorisation</div>
 
 <div class="sidebar-group" id="loc-group-valori">
   <div class="sidebar-group-title" data-index="09" onclick="toggleSidebarGroup(this.parentElement)">Valorisation &amp; horizon</div>
   <div class="sidebar-group-summary" id="loc-summary-valori"></div>
   <div class="sidebar-group-body">
-    <label>Appréciation annuelle (%) <input type="number" id="loc-apprec" value="1.5" step="0.1" oninput="onInputLocatif()"></label>
-    <label>Horizon d'investissement (ans)
+    <div class="sidebar-field">
+      <label>Appréciation annuelle (%)</label>
+      <input type="number" id="loc-apprec" value="1.5" step="0.1" oninput="onInputLocatif()">
+    </div>
+    <div class="sidebar-range">
+      <div class="sidebar-range-header">
+        <label>Horizon d'investissement</label>
+        <span class="sidebar-range-value" id="loc-horizon-display">20 ans</span>
+      </div>
       <input type="range" id="loc-horizon" min="5" max="30" value="20" oninput="onHorizonChange()">
-      <span id="loc-horizon-display">20 ans</span>
-    </label>
-  </div>
-</div>
-
-<div class="sidebar-group" id="loc-group-save">
-  <div class="sidebar-group-body">
-    <label>Nom du projet <input type="text" id="loc-projet-nom" placeholder="Ex : Appart Lyon T2"></label>
-    <button onclick="sauvegarderProjetLocatif()">Sauvegarder ce projet</button>
-    <button onclick="openProjetsPanel()">Projets sauvegardés</button>
+    </div>
   </div>
 </div>`;
 }
 
 function renderTranchesLoc() {
-  const container = document.getElementById('loc-tranches-container');
+  const container = document.getElementById('loc-tranches-list');
   if (!container) return;
   container.innerHTML = tranchesLoc.map((t, i) => {
     const isPrincipal = t.isPrincipal;
@@ -347,6 +402,8 @@ function onTypeChangeLocatif() {
   const preset = PRESETS_LOC[type] || PRESETS_LOC.ancien;
   const notaireEl = document.getElementById('loc-notaire');
   if (notaireEl) notaireEl.value = preset.notairePct;
+  const badgeEl = document.getElementById('loc-notaire-badge');
+  if (badgeEl) badgeEl.textContent = preset.notaireBadge;
   const travauxGroup = document.getElementById('loc-group-travaux');
   if (travauxGroup) travauxGroup.style.display = preset.showTravaux ? '' : 'none';
   initTranchesLoc(type);
@@ -355,12 +412,30 @@ function onTypeChangeLocatif() {
 
 function onRegimeChangeLocatif() {
   const regime = document.getElementById('loc-regime-fiscal')?.value || 'lmnp_reel';
-  const isLMNP = regime === 'lmnp_reel';
-  ['loc-label-comptabilite', 'loc-label-cfe'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = isLMNP ? '' : 'none';
-  });
+  const isLMNPReel = regime === 'lmnp_reel';
+  const isLMNP = regime === 'lmnp_reel' || regime === 'lmnp_micro';
+  const compta = document.getElementById('loc-field-comptabilite');
+  if (compta) compta.style.display = isLMNPReel ? '' : 'none'; // compta utile au réel seulement
+  const cfe = document.getElementById('loc-field-cfe');
+  if (cfe) cfe.style.display = isLMNP ? '' : 'none';            // CFE due en meublé, micro inclus
   onInputLocatif();
+}
+
+function updateCapitalDisplayLoc() {
+  const el = document.getElementById('loc-capital-display');
+  if (!el) return;
+  const prix       = parseFloat(document.getElementById('loc-prix-projet')?.value) || 0;
+  const notPct     = parseFloat(document.getElementById('loc-notaire')?.value) || 0;
+  const agence     = parseFloat(document.getElementById('loc-agence')?.value) || 0;
+  const garPct     = parseFloat(document.getElementById('loc-garantie-pct')?.value) || 0;
+  const dossier    = parseFloat(document.getElementById('loc-dossier')?.value) || 0;
+  const frais      = prix * notPct / 100 + agence + prix * garPct / 100 + dossier;
+  const totalBorrowed = tranchesLoc.reduce((s, t) => s + (t.montant || 0), 0);
+  el.innerHTML = `<div class="capital-display">
+    <span class="capital-label">Total emprunté</span>
+    <span class="capital-value">${fmt(totalBorrowed)}</span>
+    <span class="capital-sub">dont frais : ${fmt(frais)}</span>
+  </div>`;
 }
 
 function onHorizonChange() {
@@ -388,9 +463,9 @@ function renderKPIsLocatif(r) {
     <div class="kpi-sub">assurance incluse</div>
   </div>
   <div class="kpi-card">
-    <div class="kpi-label">Patrimoine net (an ${r.horizonAns})</div>
+    <div class="kpi-label">Patrimoine généré (an ${r.horizonAns})</div>
     <div class="kpi-value kpi-value--green">${fmt(r.patrimoineNetHorizon)}</div>
-    <div class="kpi-sub">valeur − dette restante</div>
+    <div class="kpi-sub">valeur − dette − apport</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Impôt annuel estimé</div>
@@ -566,7 +641,7 @@ function renderChartsLocatif(r) {
             borderWidth: 2, pointRadius: 0, fill: false
           },
           {
-            label: 'Patrimoine net',
+            label: 'Patrimoine net généré',
             data: r.patrimoineNetParAn,
             borderColor: 'rgba(46,122,46,.4)',
             borderWidth: 1.5, pointRadius: 0,
@@ -686,7 +761,7 @@ function renderTableauFiscalAnnuel(r) {
 
 function regimeLabel() {
   const sel = document.getElementById('loc-regime-fiscal');
-  const map = { lmnp_reel: 'LMNP réel', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue réel' };
+  const map = { lmnp_reel: 'LMNP réel', lmnp_micro: 'LMNP micro-BIC', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue réel' };
   return map[sel?.value] || '';
 }
 
@@ -698,12 +773,9 @@ function renderFiscalDetailLocatif(r, p) {
   if (!fd) return;
 
   const regime = p.regimeFiscal;
-  const regimeNames = { lmnp_reel: 'LMNP réel', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue régime réel' };
+  const regimeNames = { lmnp_reel: 'LMNP réel', lmnp_micro: 'LMNP micro-BIC', nu_micro: 'Location nue micro-foncier', nu_reel: 'Location nue régime réel' };
 
-  const avantageEstime = fd.impots === 0 && fd.baseImposable < 0
-    ? Math.abs(fd.baseImposable) * (p.tmi + 17.2) / 100 : 0;
-
-  const chargesRows = regime === 'nu_micro' ? '' : `
+  const chargesRows = (regime === 'nu_micro' || regime === 'lmnp_micro') ? '' : `
     <div class="fd-row indent"><span>Intérêts d'emprunt</span><span>−${fmtRaw(fd.interetsDeductibles)}</span></div>
     <div class="fd-row indent"><span>Assurance emprunteur</span><span>−${fmtRaw(Math.round(p.tranches.reduce((s,t)=>s+(t.montant||0),0) * p.tauxAssurance / 100))}</span></div>
     <div class="fd-row indent"><span>Charges de copropriété</span><span>−${fmtRaw(p.chargesCopro)}</span></div>
@@ -718,16 +790,21 @@ function renderFiscalDetailLocatif(r, p) {
     <div class="fd-row indent"><span>Amort. bien (${fmtPct(3)} / 33 ans)</span><span>−${fmtRaw(fd.amortissementFiscal - Math.round(p.mobilier*0.20))}</span></div>
     ${p.mobilier > 0 ? `<div class="fd-row indent"><span>Amort. mobilier (20% / 5 ans)</span><span>−${fmtRaw(Math.round(p.mobilier*0.20))}</span></div>` : ''}
     ` : ''}
-    ${regime === 'nu_reel' ? `
-    <div class="fd-row indent"><span>Travaux annualisés (÷10)</span><span>−${fmtRaw(Math.round(p.travaux/10))}</span></div>
+    ${regime === 'nu_reel' && p.travaux > 0 ? `
+    <div class="fd-row indent"><span>Travaux (déduits à 100 % l'année 1)</span><span>−${fmtRaw(Math.round(p.travaux))}</span></div>
     ` : ''}`;
 
   const microNote = regime === 'nu_micro'
-    ? `<div class="fd-row"><span>Abattement forfaitaire 30 %</span><span>−${fmtRaw(Math.round(r.loyerAnnuelBrut*0.30))}</span></div>` : '';
+    ? `<div class="fd-row"><span>Abattement forfaitaire 30 % (sur loyers HC)</span><span>−${fmtRaw(Math.round(r.loyerHCAnnuelNet * 0.30))}</span></div>`
+    : regime === 'lmnp_micro'
+    ? `<div class="fd-row"><span>Abattement forfaitaire 50 %</span><span>−${fmtRaw(Math.round(r.loyerAnnuelNet * 0.50))}</span></div>`
+    : '';
 
   el.innerHTML = `
 <div class="section-block">
   <div class="section-block-title">Fiscalité détaillée — ${regimeNames[regime]} — TMI ${p.tmi} %</div>
+  ${r.plafondMicroFoncierDepasse ? `<div class="cliff-note">⚠ Loyers HC &gt; 15 000 €/an : le régime micro-foncier n'est pas applicable — passez au régime réel.</div>` : ''}
+  ${r.plafondMicroBICDepasse ? `<div class="cliff-note">⚠ Recettes &gt; 77 700 €/an : le régime micro-BIC n'est pas applicable — passez au LMNP réel.</div>` : ''}
   <div class="fiscal-detail-grid">
     <div class="fiscal-calc">
       <div class="fd-row section-row"><span>Revenus</span></div>
@@ -745,11 +822,12 @@ function renderFiscalDetailLocatif(r, p) {
       </div>
       <div class="fd-row"><span>Impôt sur le revenu (${p.tmi} %)</span><span style="font-family:var(--font-mono);font-weight:600;color:${fd.impots>0?'var(--brick)':'var(--sage)'}">${fd.impots > 0 ? fmtRaw(fd.impots) : '0 € ✓'}</span></div>
       <div class="fd-row"><span>Prélèvements sociaux (17,2 %)</span><span style="font-family:var(--font-mono);font-weight:600">${fmtRaw(fd.prelevementsSociaux)}</span></div>
-      ${avantageEstime > 0 ? `
-      <div class="fd-row avantage-row">
-        <span>Avantage fiscal annuel estimé</span>
-        <span style="font-family:var(--font-mono);font-weight:700;color:var(--sage)">+${fmtRaw(Math.round(avantageEstime))}</span>
-      </div>` : ''}
+      ${fd.economieImpotGlobal > 0 ? `
+      <div class="fd-row"><span>Déficit foncier imputé sur le revenu global (≤ 10 700 €)</span><span style="font-family:var(--font-mono);font-weight:600;color:var(--sage)">−${fmtRaw(fd.economieImpotGlobal)} d'impôt</span></div>` : ''}
+      ${fd.amortissementReporte > 0 ? `
+      <div class="fd-row"><span>Amortissement reporté (art. 39 C)</span><span style="font-family:var(--font-mono)">${fmtRaw(fd.amortissementReporte)}</span></div>` : ''}
+      ${fd.deficitFoncierReporte > 0 ? `
+      <div class="fd-row"><span>Déficit foncier reporté</span><span style="font-family:var(--font-mono)">${fmtRaw(fd.deficitFoncierReporte)}</span></div>` : ''}
     </div>
     <div class="fiscal-donut-block">
       <div class="donut-title">Charge annuelle totale</div>
@@ -813,7 +891,7 @@ function renderSidebarGroupSummariesLocatif() {
     line('Apport', fmt(gn('loc-apport')))
   );
 
-  set('loc-summary-prix',
+  set('loc-summary-frais',
     line('Notaire', pct(gn('loc-notaire'))) +
     line('Agence', fmt(gn('loc-agence'))) +
     line('Dossier', fmt(gn('loc-dossier')))
@@ -848,7 +926,7 @@ function renderSidebarGroupSummariesLocatif() {
     line('Foncière', fmt(gn('loc-taxe-fonciere')) + '/an')
   );
 
-  const regimeMap = { lmnp_reel: 'LMNP réel', nu_micro: 'Micro-foncier', nu_reel: 'Nu réel' };
+  const regimeMap = { lmnp_reel: 'LMNP réel', lmnp_micro: 'Micro-BIC', nu_micro: 'Micro-foncier', nu_reel: 'Nu réel' };
   set('loc-summary-fiscal',
     line('Régime', regimeMap[gv('loc-regime-fiscal')] || '—') +
     line('TMI', pct(gn('loc-tmi')))
@@ -863,6 +941,7 @@ function onInputLocatif() {
   if (!r) return;
 
   refreshTranchesLocDerived();
+  updateCapitalDisplayLoc();
   renderSidebarGroupSummariesLocatif();
   renderKPIsLocatif(r);
   renderChartsLocatif(r);
@@ -872,7 +951,6 @@ function onInputLocatif() {
 }
 
 function mountLocatif() {
-  // Create #loc-results first so renderKPIsLocatif can write to it
   const resultsPanel = document.getElementById('locatif-results');
   if (resultsPanel && !document.getElementById('loc-results')) {
     resultsPanel.innerHTML = '<div id="loc-results"></div>';
@@ -885,6 +963,7 @@ function mountLocatif() {
     initTranchesLoc('ancien');
     renderTranchesLoc();
     onRegimeChangeLocatif();
+    updateCapitalDisplayLoc();
   }
 
   onInputLocatif();
