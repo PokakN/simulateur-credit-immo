@@ -78,18 +78,35 @@ function mettreAJourProjet(id) {
   const idx = projets.findIndex(p => p.id === id);
   if (idx === -1) return;
 
-  const nomSaisi = document.getElementById('projet-nom')?.value?.trim();
-  const urlSaisie = document.getElementById('projet-url')?.value?.trim();
-  const params = lireParams('a');
-  const res = calcSimulation(params);
   const projet = projets[idx];
+  const modeProjet = projet.mode || 'credit';
+
+  // Check if project mode matches current mode
+  if (modeProjet !== currentMode) {
+    showToast(`Ce projet est en mode ${modeProjet} — basculez vers ce mode avant de mettre à jour.`);
+    return;
+  }
+
+  let params, res, nom, urlAnnonce;
+
+  if (modeProjet === 'locatif') {
+    params = lireParamsLocatif();
+    res = calcSimulationLocatif(params);
+    nom = document.getElementById('loc-projet-nom')?.value?.trim();
+  } else {
+    // Credit mode
+    params = lireParams('a');
+    res = calcSimulation(params);
+    nom = document.getElementById('projet-nom')?.value?.trim();
+    urlAnnonce = document.getElementById('projet-url')?.value?.trim();
+  }
 
   projets[idx] = {
     ...projet,
-    nom: nomSaisi || projet.nom,
-    urlAnnonce: urlSaisie || projet.urlAnnonce,
+    nom: nom || projet.nom,
+    urlAnnonce: urlAnnonce || projet.urlAnnonce,
     typeProjet: params.typeProjet,
-    mode: projets[idx].mode || 'credit',
+    mode: modeProjet,
     date: new Date().toLocaleDateString('fr-FR'),
     mensualite: res ? res.mensualite : 0,
     params
@@ -97,8 +114,12 @@ function mettreAJourProjet(id) {
 
   sauvegarderProjets(projets);
   renderProjetsList();
-  document.getElementById('projet-nom').value = '';
-  document.getElementById('projet-url').value = '';
+  if (modeProjet === 'credit') {
+    document.getElementById('projet-nom').value = '';
+    document.getElementById('projet-url').value = '';
+  } else {
+    document.getElementById('loc-projet-nom').value = '';
+  }
   showToast(`Projet "${projets[idx].nom}" mis à jour`);
 }
 
